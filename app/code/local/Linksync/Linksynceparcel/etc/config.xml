@@ -1,0 +1,375 @@
+<?xml version="1.0"?>
+<config>
+	<modules>
+		<Linksync_Linksynceparcel>
+			<version>1.1.3-RC1</version>
+		</Linksync_Linksynceparcel>
+	</modules>
+	<frontend>
+		<routers>
+			<linksynceparcel>
+				<use>standard</use>
+				<args>
+                    <module>Linksync_Linksynceparcel</module>
+                    <frontName>linksynceparcel</frontName>
+                </args>
+			</linksynceparcel>
+			<checkout>
+                <args>
+                    <modules>
+                         <Linksync_Linksynceparcel before="Mage_Checkout">Linksync_Linksynceparcel_Checkout</Linksync_Linksynceparcel>
+                    </modules>
+                </args>
+            </checkout>
+		</routers>
+		<layout>
+            <updates>
+                <linksynceparcel module="Linksync_Linksynceparcel">
+                    <file>linksynceparcel.xml</file>
+                </linksynceparcel>
+            </updates>
+        </layout>
+	</frontend>
+	<global>
+		<blocks>
+            <linksynceparcel>
+                <class>Linksync_Linksynceparcel_Block</class>
+            </linksynceparcel>
+			<adminhtml>
+                <rewrite>
+                    <sales_order_view>Linksync_Linksynceparcel_Block_Adminhtml_Sales_Order_View</sales_order_view>
+                </rewrite>
+            </adminhtml>
+        </blocks>
+		<helpers>
+            <linksynceparcel>
+            	<class>Linksync_Linksynceparcel_Helper</class>
+            </linksynceparcel>
+        </helpers>
+		<models>
+            <linksynceparcel>
+                <class>Linksync_Linksynceparcel_Model</class>
+				<resourceModel>linksynceparcel_mysql4</resourceModel>
+            </linksynceparcel>
+            <linksynceparcel_mysql4>
+				<class>Linksync_Linksynceparcel_Model_Mysql4</class>
+                <entities>
+                    <linksynceparcel>
+                        <table>linksync_linksynceparcel_tabelrate</table>
+                    </linksynceparcel>
+					<manifest>
+                        <table>linksync_linksynceparcel_manifest</table>
+                    </manifest>
+					<consignment>
+                        <table>linksync_linksynceparcel_consignment</table>
+                    </consignment>
+					<freeshipping>
+                        <table>linksync_linksynceparcel_free_shipping</table>
+                    </freeshipping>
+					<preset>
+                        <table>linksync_linksynceparcel_article_preset</table>
+                    </preset>
+					<nonlinksync>
+                        <table>linksync_linksynceparcel_nonlinksync</table>
+                    </nonlinksync>
+					<consignmentui>
+                        <table>sales_flat_order</table>
+                    </consignmentui>
+                </entities>
+            </linksynceparcel_mysql4>
+			<sales>
+				<rewrite>
+                	<order_shipment_track>Linksync_Linksynceparcel_Model_Sales_Order_Shipment_Track</order_shipment_track>
+              	</rewrite>
+			</sales>
+        </models>
+		<resources>
+            <linksynceparcel_setup>
+                <setup>
+                    <module>Linksync_Linksynceparcel</module>
+                    <class>Mage_Catalog_Model_Resource_Eav_Mysql4_Setup</class>
+                </setup>
+                <connection>
+                    <use>core_setup</use>
+                </connection>
+            </linksynceparcel_setup>
+            <linksynceparcel_write>
+                <connection>
+                    <use>core_write</use>
+                </connection>
+            </linksynceparcel_write>
+            <linksynceparcel_read>
+                <connection>
+                    <use>core_read</use>
+                </connection>
+            </linksynceparcel_read>
+        </resources>
+		<events>
+  	    	<checkout_submit_all_after>
+                <observers>
+                    <eparcel_save_order_after_submit>
+                        <class>linksynceparcel/observer</class>
+                        <method>saveOrderAfterSubmit</method>
+                    </eparcel_save_order_after_submit>
+                </observers>
+            </checkout_submit_all_after>
+			<adminhtml_sales_order_shipping_address_change>
+                <observers>
+                    <eparcel_save_order_shipping_address_change>
+                        <class>linksynceparcel/observer</class>
+                        <method>resubmitConsignment</method>
+                    </eparcel_save_order_shipping_address_change>
+                </observers>
+            </adminhtml_sales_order_shipping_address_change>
+			<admin_system_config_changed_section_carriers>
+			   <observers>
+				   <admin_system_config_section_save_after_eparcel>
+					   <class>linksynceparcel/observer</class>
+					   <method>configSection</method>
+				   </admin_system_config_section_save_after_eparcel>
+			   </observers>
+			</admin_system_config_changed_section_carriers>
+			<sales_order_payment_cancel>
+			   <observers>
+				   <sales_order_payment_cancel_eparcel>
+					   <class>linksynceparcel/observer</class>
+					   <method>orderCancelled</method>
+				   </sales_order_payment_cancel_eparcel>
+			   </observers>
+			</sales_order_payment_cancel>
+			<checkout_controller_multishipping_shipping_post>
+				<observers>
+				   <checkout_controller_multishipping_shipping_post_eparcel>
+					   <class>linksynceparcel/observer</class>
+					   <method>saveMultiship</method>
+				   </checkout_controller_multishipping_shipping_post_eparcel>
+				</observers>
+			</checkout_controller_multishipping_shipping_post>
+			<admin_session_user_login_success>
+				<observers>
+					<admin_session_user_login_success_eparcel>
+						<type>singleton</type>
+					   	<class>linksynceparcel/notification</class>
+					   	<method>notify</method>
+				   	</admin_session_user_login_success_eparcel>
+				</observers>
+			</admin_session_user_login_success>
+			<sales_order_save_after>
+               <observers>
+                   <sales_order_save_after_eparcel>
+                       <class>linksynceparcel/observer</class>
+                       <method>orderSave</method>
+                   </sales_order_save_after_eparcel>
+               </observers>
+            </sales_order_save_after>
+        </events>
+		<template>
+            <email>
+                <notify_customer_on_despatch module="linksynceparcel">
+                    <label>Template to notify customers on manifest despatch</label>
+                    <file>notify_customer_on_despatch.html</file>
+                    <type>html</type>
+                </notify_customer_on_despatch>
+            </email>
+        </template>
+	</global>
+	<admin>
+        <routers>
+			<linksynceparcel>
+				<use>admin</use>
+				<args>
+                    <module>Linksync_Linksynceparcel</module>
+                    <frontName>linksynceparcel</frontName>
+                </args>
+			</linksynceparcel>
+			<adminhtml>
+                <args>
+                    <modules>
+                        <Linksync_Linksynceparcel before="Mage_Adminhtml">Linksync_Linksynceparcel_Adminhtml</Linksync_Linksynceparcel>
+                    </modules>
+                </args>
+            </adminhtml>
+        </routers>
+    </admin>
+	<adminhtml>
+        <acl>
+            <resources>
+                <admin>
+                    <children>
+                        <system>
+                            <children>
+                                <config>
+                                    <children>
+                                        <carriers>
+                                            <title>All</title>
+                                        </carriers>
+                                    </children>
+                                </config>
+                            </children>
+                        </system>
+						
+						<linksynceparcel module="linksynceparcel">
+							<title>eParcel</title>
+							<sort_order>75</sort_order>
+							<children>
+								<consignment module="linksynceparcel">
+									<title>Consignments</title>
+									<sort_order>1</sort_order>
+								</consignment>
+								<search module="linksynceparcel">
+									<title>Consignment Search</title>
+									<sort_order>2</sort_order>
+								</search>
+								<manifest module="linksynceparcel">
+									<title>Manifests</title>
+									<sort_order>3</sort_order>
+								</manifest>
+								<settings module="linksynceparcel">
+									<title>Settings</title>
+									<sort_order>4</sort_order>
+									<children>
+										<preset module="linksynceparcel">
+											<title>Article Presets</title>
+											<sort_order>5</sort_order>
+										</preset>
+										<nonlinksync module="linksynceparcel">
+											<title>Assign Shipping Types</title>
+											<sort_order>6</sort_order>
+										</nonlinksync>
+										<admin module="linksynceparcel">
+											<title>Configuration</title>
+											<sort_order>10</sort_order>
+										</admin>
+									</children>
+								</settings>
+							</children>
+						</linksynceparcel>
+						
+                    </children>
+                </admin>
+            </resources>
+        </acl>
+		<layout>
+            <updates>
+                <linksynceparcel>
+                    <file>linksynceparcel.xml</file>
+                </linksynceparcel>
+            </updates>
+        </layout>
+		<menu>
+			<linksynceparcel module="linksynceparcel">
+				<title>eParcel</title>
+				<sort_order>75</sort_order>
+				<children>
+					<consignment module="linksynceparcel">
+						<title>Consignments</title>
+						<sort_order>1</sort_order>
+						<action>linksynceparcel/adminhtml_consignment</action>
+					</consignment>
+					<search module="linksynceparcel">
+						<title>Consignment Search</title>
+						<sort_order>2</sort_order>
+						<action>linksynceparcel/adminhtml_search</action>
+					</search>
+					<manifest module="linksynceparcel">
+						<title>Manifests</title>
+						<sort_order>3</sort_order>
+						<action>linksynceparcel/adminhtml_manifest</action>
+					</manifest>
+					<settings module="linksynceparcel">
+						<title>Settings</title>
+						<sort_order>4</sort_order>
+						<children>
+							<preset module="linksynceparcel">
+								<title>Article Presets</title>
+								<depends>
+								   <config>carriers/linksynceparcel/use_article_dimensions</config>
+								</depends>
+								<sort_order>5</sort_order>
+								<action>linksynceparcel/adminhtml_preset</action>
+							</preset>
+							<nonlinksync module="linksynceparcel">
+								<title>Assign Shipping Types</title>
+								<sort_order>6</sort_order>
+								<action>linksynceparcel/adminhtml_nonlinksync</action>
+							</nonlinksync>
+							<admin module="linksynceparcel">
+								<title>Configuration</title>
+								<sort_order>10</sort_order>
+								<action>adminhtml/system_config/edit/section/carriers</action>
+							</admin>
+						</children>
+					</settings>
+					<help module="linksynceparcel">
+						<title>Help</title>
+						<sort_order>11</sort_order>
+						<action>linksynceparcel/adminhtml_help</action>
+					</help>
+				</children>
+			</linksynceparcel>
+        </menu>
+    </adminhtml>
+	<default>
+        <carriers>
+            <linksynceparcel>
+                <active>1</active>
+                <model>linksynceparcel/carrier_linksynceparcel</model>
+				<operation_mode>2</operation_mode>
+				<sallowspecific>1</sallowspecific>
+                <specificcountry>AU</specificcountry>
+                <specificerrmsg>This shipping method is currently unavailable. If you would like to ship using this shipping method, please contact us.</specificerrmsg>
+				<handling_type>F</handling_type>
+				<handling_fee>0.00</handling_fee>
+				<insurance>0</insurance>
+				<signature_required>1</signature_required>
+				<safe_drop>1</safe_drop>
+				<print_return_labels>0</print_return_labels>
+				<partial_delivery_allowed>0</partial_delivery_allowed>
+				<post_email_notification>0</post_email_notification>
+				<label_format>mpp</label_format>
+				<apply_to_all>0</apply_to_all>
+				<notify_customers>0</notify_customers>
+				<subject>Order [OrderNumber] tracking number</subject>
+				<email_body><![CDATA[<p>Hello [CustomerFirstname],</p><p>&nbsp;</p><p>Your order [OrderNumber] will be despatched today, and once shipped, you'll be able to use the following link to track it:&nbsp;</p><p>&nbsp;</p><p><a href="http://auspost.com.au/track/track.html?id=[TrackingNumber]">http://auspost.com.au/track/track.html?id=[TrackingNumber]</a></p>]]></email_body>
+				<mark_despatch>0</mark_despatch>
+				<change_shipping_method>0</change_shipping_method>
+				<use_order_total_weight>0</use_order_total_weight>
+				<use_article_dimensions>1</use_article_dimensions>
+				<display_order_status>0</display_order_status>
+				<display_choosen_status>0</display_choosen_status>
+				<product_unit>kgs</product_unit>
+				<copy_order_notes>0</copy_order_notes>
+				<int_insurance>1</int_insurance>
+				<default_int_insurance_value>1</default_int_insurance_value>
+				<order_value_declared_value>0</order_value_declared_value>
+				<has_commercial_value>1</has_commercial_value>
+				<default_product_classification>991</default_product_classification>
+				<classification_explanation>Merchandise</classification_explanation>
+				<default_contents>Merchandise</default_contents>
+				<parcel_post_left_offset>0</parcel_post_left_offset>
+				<parcel_post_top_offset>0</parcel_post_top_offset>
+				<express_post_left_offset>0</express_post_left_offset>
+				<express_post_top_offset>0</express_post_top_offset>
+				<int_economy_air_left_offset>0</int_economy_air_left_offset>
+				<int_economy_air_top_offset>0</int_economy_air_top_offset>
+				<int_express_courier_left_offset>0</int_express_courier_left_offset>
+				<int_express_courier_top_offset>0</int_express_courier_top_offset>
+				<int_express_post_left_offset>0</int_express_post_left_offset>
+				<int_express_post_top_offset>0</int_express_post_top_offset>
+				<int_pack_track_left_offset>0</int_pack_track_left_offset>
+				<int_pack_track_top_offset>0</int_pack_track_top_offset>
+				<int_registered_left_offset>0</int_registered_left_offset>
+				<int_registered_top_offset>0</int_registered_top_offset>
+				<user_order_details>1</user_order_details>
+            </linksynceparcel>
+        </carriers>
+    </default>
+	<crontab>
+        <jobs>
+            <linksynceparcel_log_purge>
+				<schedule><cron_expr>0 0 * * *</cron_expr></schedule>
+                <run><model>linksynceparcel/observer::logPurge</model></run>
+            </linksynceparcel_log_purge>
+       </jobs>
+    </crontab>
+</config>

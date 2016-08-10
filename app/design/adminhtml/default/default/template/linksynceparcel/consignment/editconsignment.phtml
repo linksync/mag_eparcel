@@ -1,0 +1,256 @@
+<style>
+.tablecustom input, .tablecustom select{
+	width:200px;
+}
+</style>
+<div class="content-header">
+    <h3 class="icon-head head-sales-order-invoice"><?php echo $this->getHeaderText()?></h3>    
+	<p class="form-buttons">
+	<button style="" onclick="setLocation('<?php echo $this->getBackUrl()?>')" class="scalable back" type="button" title="Back">
+		<span><span><span>Back</span></span></span>
+	</button>
+	<button style="" onclick="setLocation(window.location.href)" class="scalable " type="button" title="Reset">
+		<span><span><span>Reset</span></span></span>
+	</button>
+	</p>
+</div>
+<?php  $_order = $this->getOrder() ?>
+<?php  $consignment = $this->getConsignment() ?>
+<?php  $articles = $this->getArticles() ?>
+<?php
+	$use_order_total_weight = (int)Mage::getStoreConfig('carriers/linksynceparcel/use_order_total_weight');
+	$use_article_dimensions = (int)Mage::getStoreConfig('carriers/linksynceparcel/use_article_dimensions');
+	if($use_order_total_weight == 1)
+	{
+		$weight = Mage::helper('linksynceparcel')->getOrderWeight($_order);
+		if($weight == 0)
+		{
+			$default_article_weight = Mage::getStoreConfig('carriers/linksynceparcel/default_article_weight');
+			if($default_article_weight)
+			{
+				$weight = $default_article_weight;
+			}
+		}
+		$weightPerArticle = Mage::helper('linksynceparcel')->getAllowedWeightPerArticle();
+	}
+?>
+<form name="edit_form" id="edit_form" method="post" action="<?php echo $this->getSaveUrl() ?>">
+    <?php echo $this->getBlockHtml('formkey')?>
+	<input id="order_id" type="hidden" name="order_id" value="<?php echo $this->getOrder()->getId()?>" />
+    <input id="number_of_articles2" type="hidden" name="number_of_articles" value="<?php echo count($articles)?>" />
+    <input id="articles_type" type="hidden" name="articles_type" value="Custom" />
+    
+    <?php if( ($use_order_total_weight == 1) && ($weight > $weightPerArticle) ):?>
+        <h3>Total Order Weight: <strong><?php echo $weight?></strong></h3>
+    <?php endif;?>
+    
+    <?php $i=0;?>
+	<?php foreach($articles as $article):?>
+		<div class="box">
+			<h3>Article <?php echo $i+1?></h3>
+			<span class="field-row1">
+				<label class="normal" for="article_description">
+					<?php echo Mage::helper('sales')->__('Description:') ?><span class="required">*</span>
+				</label>
+				<input id="article_description<?php echo $i+1?>" name="article<?php echo $i+1?>[description]" class="required-entry" value="<?php echo $article['article_description']?>"/>
+			</span>
+			<span class="field-row1">
+				<label class="normal" for="article_weight">
+					<?php echo Mage::helper('sales')->__('Weight (Kgs):') ?><span class="required">*</span>
+				</label>
+				<input size="10" style="text-align:center" id="article_weight<?php echo $i+1?>" name="article<?php echo $i+1?>[weight]" class="required-entry positive-number article_weight maximum-value" label="Weight" value="<?php echo $article['actual_weight']?>"/>
+			</span>
+            <?php if($use_article_dimensions == 1): ?>
+			<span class="field-row1">
+				<label class="normal" for="article_height">
+					<?php echo Mage::helper('sales')->__('Height (cm):') ?>
+				</label>
+				<input size="10" style="text-align:center" class="positive-number" label="Height" id="article_height<?php echo $i+1?>" name="article<?php echo $i+1?>[height]" value="<?php echo $article['height']?>"/>
+			</span>
+			<span class="field-row1">
+				<label class="normal" for="article_width">
+					<?php echo Mage::helper('sales')->__('Width (cm):') ?>
+				</label>
+				<input size="10" style="text-align:center" class="positive-number" label="Width" id="article_width<?php echo $i+1?>" name="article<?php echo $i+1?>[width]" value="<?php echo $article['width']?>"/>
+			</span>
+			<span class="field-row1">
+				<label class="normal" for="article_length">
+					<?php echo Mage::helper('sales')->__('Length (cm):') ?>
+				</label>
+				<input size="10" style="text-align:center" class="positive-number" label="Length" id="article_length<?php echo $i+1?>" name="article<?php echo $i+1?>[length]" value="<?php echo $article['length']?>"/>
+                <input type="hidden" id="article_number<?php echo $i+1?>" name="article<?php echo $i+1?>[article_number]" value="<?php echo $article['article_number']?>"/>
+			</span>
+            <?php else: ?>
+            	<input type="hidden" name="article<?php echo $i+1?>[height]" value="0"/>
+                <input type="hidden" name="article<?php echo $i+1?>[width]" value="0"/>
+                <input type="hidden" name="article<?php echo $i+1?>[length]" value="0"/>
+                <input type="hidden" name="article<?php echo $i+1?>[article_number]" value="<?php echo $article['article_number']?>"/>
+            <?php endif; ?>
+		</div>
+        <?php $i++; ?>
+	<?php endforeach;?>
+	<div class="box">
+			<h3>Consignment Fields</h3>
+			<table width="100%" border="0" cellspacing="6" cellpadding="6" class="tablecustom">
+			  <tr>
+				<td><?php echo Mage::helper('sales')->__('Delivery instructions') ?></td>
+				<td><textarea name="delivery_instruction" maxlength="256" cols="40" rows="4"><?php echo $consignment['delivery_instruction']; ?></textarea></td>
+			  </tr>
+			  <tr>
+				<td width="20%"><?php echo Mage::helper('sales')->__('Partial Delivery allowed?') ?></td>
+				<td>
+                <?php if(Mage::helper('linksynceparcel')->isDisablePartialDeliveryMethod($_order->getId())): ?>
+                <select id="partial_delivery_allowed" name="partial_delivery_allowed" disabled="disabled">
+					<option value="0">No</option>
+				</select>
+                <?php else: ?>
+                <select id="partial_delivery_allowed" name="partial_delivery_allowed" >
+					<option value="1" <?php echo (($consignment['partial_delivery_allowed'])==1?'selected':'')?>>Yes</option>
+					<option value="0" <?php echo (($consignment['partial_delivery_allowed'])!=1?'selected':'')?>>No</option>
+				</select>
+                 <?php endif; ?>
+                </td>
+			  </tr>
+			  
+			  <?php if(Mage::helper('linksynceparcel')->isCashToCollect($_order->getId())): ?>
+			  <tr>
+				<td><?php echo Mage::helper('sales')->__('Cash to collect') ?></td>
+				<td><input id="cash_to_collect" name="cash_to_collect"  value="<?php echo $consignment['cash_to_collect']?>"/></td>
+			  </tr>
+			  <?php endif; ?>
+			  
+			  <tr>
+				<td><?php echo Mage::helper('sales')->__('Delivery signature required?') ?></td>
+				<td><select id="delivery_signature_allowed" name="delivery_signature_allowed" >
+					<option value="1" <?php echo ($consignment['delivery_signature_allowed']==1?'selected':'')?>>Yes</option>
+					<option value="0" <?php echo ($consignment['delivery_signature_allowed']!=1?'selected':'')?>>No</option>
+				</select></td>
+			  </tr>
+			  <tr>
+				<td><?php echo Mage::helper('sales')->__('Safe Drop?') ?></td>
+				<td><select id="safe_drop" name="safe_drop" style="width:140px">
+					<option value="1" <?php echo ($consignment['safe_drop']==1?'selected':'')?>>Yes</option>
+					<option value="0" <?php echo ($consignment['safe_drop']!=1?'selected':'')?>>No</option>
+				</select></td>
+			  </tr>
+			  <tr>
+				<td><?php echo Mage::helper('sales')->__('Transit cover required?') ?></td>
+				<td><select id="transit_cover_required" name="transit_cover_required">
+					<option value="1" <?php echo ($article['is_transit_cover_required']=='Y'?'selected':'')?>>Yes</option>
+					<option value="0" <?php echo ($article['is_transit_cover_required']!='Y'?'selected':'')?>>No</option>
+				</select></td>
+			  </tr>
+			  <tr>
+				<td><?php echo Mage::helper('sales')->__('Transit cover Amount') ?></td>
+				<td><input id="transit_cover_amount" class="positive-number" label="Transit cover amount" name="transit_cover_amount" value="<?php echo $article['transit_cover_amount']?>" /></td>
+			  </tr>
+			  <tr>
+				<td><?php echo Mage::helper('sales')->__('Shipment contains dangerous goods?') ?></td>
+				<td><select id="contains_dangerous_goods" name="contains_dangerous_goods">
+					<option value="1" <?php echo ($consignment['contains_dangerous_goods']==1?'selected':'')?>>Yes</option>
+					<option value="0" <?php echo ($consignment['contains_dangerous_goods']!=1?'selected':'')?>>No</option>
+				</select></td>
+			  </tr>
+              <tr>
+				<td><?php echo Mage::helper('sales')->__('Australia Post email notification?') ?></td>
+				<td><select id="email_notification" name="email_notification">
+					<option value="1" <?php echo ($consignment['email_notification']==1?'selected':'')?>>Yes</option>
+					<option value="0" <?php echo ($consignment['email_notification']!=1?'selected':'')?>>No</option>
+				</select></td>
+			  </tr>
+              <tr>
+				<td><?php echo Mage::helper('sales')->__('Notify Customers?') ?></td>
+				<td><select id="notify_customers" name="notify_customers">
+					<option value="1" <?php echo ($consignment['notify_customers']==1?'selected':'')?>>Yes</option>
+					<option value="0" <?php echo ($consignment['notify_customers']!=1?'selected':'')?>>No</option>
+				</select></td>
+			  </tr>
+			</table>
+			
+	</div>
+    <div class="clear"></div>
+	
+	<button style="" onclick="return submitForm()" class="scalable save submit-button" type="button" title="Submit"><span><span><span>Update Consignment</span></span></span></button>
+    
+</form>
+<script>
+<?php if($use_order_total_weight == 1): ?>
+var weight = '<?php echo $weight?>';
+var weightPerArticle = '<?php echo $weightPerArticle?>';
+<?php endif; ?>
+function submitForm()
+{
+	var valid = true;
+	$jEparcel('.required-entry').each(function(){
+		var value = $jEparcel.trim($jEparcel(this).val());
+		if(value.length == 0 && valid)
+		{
+			valid = false;
+		}
+	});
+	if(!valid)
+	{
+		alert('Please enter all the mandatory fields');
+		return false;
+	}
+	$jEparcel('.positive-number').each(function(){
+		var value = $jEparcel.trim($jEparcel(this).val());
+		var label = $jEparcel(this).attr('label');
+		if(isNaN(value))
+		{
+			alert(label +' should be a number');
+			valid = false;
+		}
+		
+		value = parseInt(value);
+		if(value < 0)
+		{
+			alert(label +' should be a postive number');
+			valid = false;
+		}
+		
+	});
+	if(!valid)
+	{
+		return false;
+	}
+	
+	<?php if($use_order_total_weight == 1): ?>
+	$jEparcel('.maximum-value').each(function(){
+		var value = $jEparcel.trim($jEparcel(this).val());
+		var label = $jEparcel(this).attr('label');
+		value = parseFloat(value);
+		if(value > weightPerArticle)
+		{
+			alert('Allowed weight per article is '+ weightPerArticle);
+			valid = false;
+		}
+		
+	});
+	if(!valid)
+	{
+		return false;
+	}
+	
+	var totalInputWeight = 0;
+	$jEparcel('.article_weight').each(function(){
+		var value = $jEparcel.trim($jEparcel(this).val());
+		value = parseFloat(value);
+		totalInputWeight += value;
+	});
+
+	if(totalInputWeight < weight)
+	{
+		if(!confirm('Combined article weight is less than the total order weight. Do you want to continue?'))
+			return false;
+		$('edit_form').submit();
+	}
+	else
+	{
+		$('edit_form').submit();
+	}
+	<?php else: ?>
+		$('edit_form').submit();
+	<?php endif; ?>
+}
+</script>

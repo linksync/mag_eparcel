@@ -1,0 +1,253 @@
+<?php
+$display = false; 
+$params = $this->getRequest()->getParams();
+if(isset($params['section']))
+{
+	if($params['section'] == 'carriers')
+	{
+		$display = true;
+	}
+}
+else
+{
+	$display = true;
+}
+
+$site_url = Mage::helper('linksynceparcel')->getSiteUrl();
+$note = 'Note that once you save your API Key it will be permanently linked to '.$site_url.'. If you change the URL of the site, or want to use the API Key on a different site, you’ll need to <a href="https://www.linksync.com/help/support-request" target="_blank">contact linksync support</a> to have them reset the Site URL.';
+
+if($display)
+{
+?>
+	<script>
+	var api_key_note = '<?php echo $note?>';
+	$jEparcel = jQuery.noConflict();
+	$jEparcel(document).ready(function(){
+		$jEparcel('.head-massaction').hide();
+		$jEparcel('#row_carriers_linksynceparcel_laid p.note').html(api_key_note);
+
+		$jEparcel("#dialog").dialog({
+			autoOpen: false,
+			width:'400px'
+		});
+		
+		$jEparcel("#dialog2").dialog({
+			autoOpen: false,
+			width:'400px'
+		});
+		
+		$jEparcel("#dialog_submit").click(function(e) {
+			if(!$jEparcel("#dialog_checkbox").prop('checked'))
+			{
+				alert('Please acknowledge to submit test manifest');
+				e.preventDefault();
+			}
+		});
+									   
+		$jEparcel('.print_label').click(function(){
+			var consignmentNumber = $jEparcel(this).attr('lang');
+			var ajaxCaller = '<?php echo $this->getUrl('linksynceparcel/index/updateLabelAsPrinted/') ?>consignmentNumber/'+consignmentNumber;
+			$jEparcel.ajax({
+				type: "POST",
+				url: ajaxCaller,
+				success: function(data){
+					location.href = location.href;
+				}
+			});
+		});
+		
+		$jEparcel('.print_return_label').click(function(){
+			if(!$jEparcel(this).hasClass('printed'))
+			{
+				var consignmentNumber = $jEparcel(this).attr('lang');
+				var ajaxCaller = '<?php echo $this->getUrl('linksynceparcel/index/updateReturnLabelAsPrinted/') ?>consignmentNumber/'+consignmentNumber;
+				$jEparcel.ajax({
+					type: "POST",
+					url: ajaxCaller,
+					success: function(data){
+						location.href = location.href;
+					}
+				});
+			}
+		});
+		
+		$jEparcel('#carriers_linksynceparcel_has_commercial_value').change(function() {
+			if($jEparcel(this).val() == 1) {
+				$jEparcel('#carriers_linksynceparcel_default_product_classification').attr('disabled', true);
+				$jEparcel('#carriers_linksynceparcel_default_product_classification').val('991');
+				$jEparcel('#row_carriers_linksynceparcel_classification_explanation').show();
+				$jEparcel('#carriers_linksynceparcel_classification_explanation').attr('disabled', false);
+			} else {
+				$jEparcel('#carriers_linksynceparcel_default_product_classification').attr('disabled', false);
+			}
+		});
+		
+		if($jEparcel('#carriers_linksynceparcel_has_commercial_value').val() == 1) {
+			$jEparcel('#carriers_linksynceparcel_default_product_classification').attr('disabled', true);
+			$jEparcel('#carriers_linksynceparcel_default_product_classification').val('991');
+			$jEparcel('#row_carriers_linksynceparcel_classification_explanation').show();
+			$jEparcel('#carriers_linksynceparcel_classification_explanation').attr('disabled', false);
+		} else {
+			$jEparcel('#carriers_linksynceparcel_default_product_classification').attr('disabled', false);
+		}
+		
+		$jEparcel('.consignment-ui-hide').parent().hide();
+		$jEparcel('.consignment-ui-hide').css('width','140px');
+		$jEparcel('.consignment-ui-hide').css('margin','4px 0');
+		$jEparcel('#edit_default_consignment').css('width','140px');
+		$jEparcel('#edit_default_consignment').css('margin','4px 0');
+		$jEparcel('.articles_type-ui').css('margin','4px 0');
+		$jEparcel('#order_consignment_massaction > table').css('height','auto');
+		
+		//Insert labels
+		$jEparcel('<tr class="system-fieldset-sub-head" id="row_carriers_linksynceparcel_account-settings"><td colspan="5"><h4 id="account-settings">Account Settings</h4></td></tr>').insertBefore('#row_carriers_linksynceparcel_laid');
+		$jEparcel('<tr class="system-fieldset-sub-head" id="row_carriers_linksynceparcel_return-address"><td colspan="5"><h4 id="return-address">Return Address</h4></td></tr>').insertBefore('#row_carriers_linksynceparcel_return_address_name');
+		$jEparcel('<tr class="system-fieldset-sub-head" id="row_carriers_linksynceparcel_domestic"><td colspan="5"><h4 id="domestic">Domestic</h4></td></tr>').insertBefore('#row_carriers_linksynceparcel_insurance');
+		$jEparcel('<tr class="system-fieldset-sub-head" id="row_carriers_linksynceparcel_international"><td colspan="5"><h4 id="international">International</h4></td></tr>').insertBefore('#row_carriers_linksynceparcel_int_insurance');
+		$jEparcel('<tr class="system-fieldset-sub-head" id="row_carriers_linksynceparcel_label"><td colspan="5"><h4 id="label">Label</h4></td></tr>').insertBefore('#row_carriers_linksynceparcel_parcel_post');
+		$jEparcel('<tr class="system-fieldset-sub-head" id="row_carriers_linksynceparcel_general-settings"><td colspan="5"><h4 id="general-settings">General Settings</h4></td></tr>').insertBefore('#row_carriers_linksynceparcel_copy_order_notes');
+		$jEparcel('<tr class="system-fieldset-sub-head" id="row_carriers_linksynceparcel_linksync-support"><td colspan="5"><h4 id="linksync-support">linksync Support</h4></td></tr>').insertBefore('#row_carriers_linksynceparcel_sendlog');
+	});
+	var redirectUrl = '';
+	function setLocationConfirmDialogNew(url)
+	{
+		redirectUrl = url;
+		if(!$jEparcel('#despatchManifest').hasClass('disabled'))
+		{
+			var mode = '<?php echo (int)Mage::helper('linksynceparcel')->getStoreConfig('carriers/linksynceparcel/operation_mode')?>';		
+			if(mode == 1)
+			{
+				$jEparcel("#dialog_submit2").attr('href',redirectUrl);
+				$jEparcel("#dialog2").dialog("open");
+			}
+			else
+			{
+				$jEparcel("#dialog_submit").attr('href',redirectUrl);
+				$jEparcel("#dialog").dialog("open");
+			}
+		}
+	}
+	
+	function editdefaultconsignment(element)
+	{
+		if($jEparcel('#edit_default_consignment').val() == 1)
+		{
+			// $jEparcel('.consignment-ui-hide').parent().show();
+		}
+		else
+		{
+			$jEparcel('.consignment-ui-hide').parent().hide();
+		}
+		
+		// Defaults
+		if(jQuery('#insurance').val() == 0) {
+			jQuery('#order_value_insurance').parent().hide();
+			jQuery('#insurance_value').parent().hide();
+		} else {
+			if(jQuery('#order_value_insurance').val() == 1) {
+				jQuery('#insurance_value').parent().hide();
+			}
+		}
+		if(jQuery('#has_commercial_value').val() == 1) {
+			jQuery('#product_classification').attr('disabled', true);
+			jQuery('#product_classification').val(991);
+		}
+		if(jQuery('#product_classification').val() != 991) {
+			jQuery('#product_classification_text').parent().hide();
+		}
+	}
+	
+	function insuranceconsignment(element) {
+		if(element.value == 0) {
+			jQuery('#order_value_insurance').parent().hide();
+		} else {
+			jQuery('#order_value_insurance').parent().show();
+			if(jQuery('#order_value_insurance').val() == 0) {
+				jQuery('#insurance_value').parent().show();
+			}
+		}
+	}
+	function order_value_insuranceconsignment(element) {
+		if(element.value == 0) {
+			jQuery('#insurance_value').parent().show();
+		} else {
+			jQuery('#insurance_value').parent().hide();
+		}
+	}
+	function has_commercial_valueconsignment(element) {
+		if(element.value == 1) {
+			jQuery('#product_classification').attr('disabled', true);
+			jQuery('#product_classification').val(991);
+			jQuery('#product_classification_text').parent().show();
+		} else {
+			jQuery('#product_classification').attr('disabled', false);
+		}
+	}
+	function product_classificationconsignment(element) {
+		if(element.value == 991) {
+			jQuery('#product_classification_text').parent().show();
+		} else {
+			jQuery('#product_classification_text').val('');
+			jQuery('#product_classification_text').parent().hide();
+		}
+	}
+	</script>
+	<div id="dialog" title="Submit Test Manifest" style="display:none">
+	<form id="dialogform" method="post">
+	<p>You are in test mode. Test mode enables you to use and test all features of the linksync eParcel without actually submitting a manifest to Australia Post on despatch of a manifest.</p>
+	<label> <input id="dialog_checkbox" name="dialog_checkbox" type="checkbox"> I acknowledge this is only a test. </label>
+	<br /><br /><br/>
+	<a style='background: url("<?php echo Mage::getBaseUrl('skin').'adminhtml/default/default/images/btn_bg.gif'?>") repeat-x scroll 0 100% #FFAC47;
+		border-color: #ED6502 #A04300 #A04300 #ED6502;
+		border-style: solid;
+		border-width: 1px;
+		color: #FFFFFF;
+		cursor: pointer;
+		font: bold 12px arial,helvetica,sans-serif;
+		padding: 3px 7px 3px;
+		text-align: center !important;
+		white-space: nowrap;
+		text-decoration:none;
+		float:right
+		';
+		class="button" 
+		type="button" 
+		title="Submit"
+		id="dialog_submit"
+		href="#"
+		>
+		<span><span><span>Submit</span></span></span>
+	</a>
+	</form>
+	</div>
+	
+	<div id="dialog2" title="Submit Manifest" style="display:none">
+	<form id="dialogform2" method="post">
+	<p>You are about to submit your manifest to Australia Post. Once your manifest is despatched, you won't be able to modify it, or the associated consignments..</p>
+	<br /><br/>
+	<a style='background: url("<?php echo Mage::getBaseUrl('skin').'adminhtml/default/default/images/btn_bg.gif'?>") repeat-x scroll 0 100% #FFAC47;
+		border-color: #ED6502 #A04300 #A04300 #ED6502;
+		border-style: solid;
+		border-width: 1px;
+		color: #FFFFFF;
+		cursor: pointer;
+		font: bold 12px arial,helvetica,sans-serif;
+		padding: 3px 7px 3px;
+		text-align: center !important;
+		white-space: nowrap;
+		text-decoration:none;
+		float:right
+		';
+		class="button" 
+		type="button" 
+		title="Submit"
+		id="dialog_submit2"
+		href="#"
+		>
+		<span><span><span>Submit</span></span></span>
+	</a>
+	</form>
+	</div>
+<?php
+}
+?>

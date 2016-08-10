@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+<layout version="0.1.0">
+	<adminhtml_system_config_edit>
+		<update handle="editor"/>
+		<reference name="head">
+			<action method="setCanLoadTinyMce"><load>1</load></action>
+		</reference>
+		<reference name="content">
+        	<block type="linksynceparcel/adminhtml_displayhelp" template="linksynceparcel/consignment/displayhelp.phtml"/>    
+        	<block type="linksynceparcel/adminhtml_labelprinted" template="linksynceparcel/consignment/labelprinted.phtml"/>    
+        </reference>
+	</adminhtml_system_config_edit>
+
+	<adminhtml_sales_order_view>
+		<reference name="sales_order_tabs">
+				<action method="addTab"><name>linksync_eparcel</name><block>linksynceparcel/adminhtml_sales_order_view_tab_linksynceparcel</block></action>
+				<action method="addTab"><name>linksynceparcel_changeshippingoption</name><block>linksynceparcel/adminhtml_sales_order_view_tab_changeshippingoption</block></action>
+        </reference>
+	</adminhtml_sales_order_view>
+	<linksynceparcel_consignment_create>
+        <reference name="content">
+            <block type="linksynceparcel/adminhtml_consignment_create" name="consignment_create" template="linksynceparcel/consignment/create.phtml"/>
+			<block type="linksynceparcel/adminhtml_displayhelp" template="linksynceparcel/consignment/displayhelp.phtml"/>   
+			<block type="linksynceparcel/adminhtml_labelprinted" template="linksynceparcel/consignment/labelprinted.phtml"/>
+        </reference>
+    </linksynceparcel_consignment_create>
+	<linksynceparcel_consignment_editarticle>
+        <reference name="content">
+            <block type="linksynceparcel/adminhtml_consignment_edit" name="consignment_edit" template="linksynceparcel/consignment/edit.phtml"/>
+			<block type="linksynceparcel/adminhtml_displayhelp" template="linksynceparcel/consignment/displayhelp.phtml"/>   
+			<block type="linksynceparcel/adminhtml_labelprinted" template="linksynceparcel/consignment/labelprinted.phtml"/>
+        </reference>
+    </linksynceparcel_consignment_editarticle>
+	<linksynceparcel_consignment_editconsignment>
+        <reference name="content">
+			<block type="linksynceparcel/adminhtml_displayhelp" template="linksynceparcel/consignment/displayhelp.phtml"/>   
+			<block type="linksynceparcel/adminhtml_labelprinted" template="linksynceparcel/consignment/labelprinted.phtml"/>
+            <block type="linksynceparcel/adminhtml_consignment_editconsignment" name="consignment_editconsignment" template="linksynceparcel/consignment/editconsignment.phtml"/>
+        </reference>
+    </linksynceparcel_consignment_editconsignment>
+	<linksynceparcel_consignment_addarticle>
+        <reference name="content">
+			<block type="linksynceparcel/adminhtml_displayhelp" template="linksynceparcel/consignment/displayhelp.phtml"/>   
+			<block type="linksynceparcel/adminhtml_labelprinted" template="linksynceparcel/consignment/labelprinted.phtml"/>
+            <block type="linksynceparcel/adminhtml_consignment_add" name="consignment_add" template="linksynceparcel/consignment/add.phtml"/>
+        </reference>
+    </linksynceparcel_consignment_addarticle>
+	<linksynceparcel_adminhtml_consignment_index>
+        <reference name="content">
+            <block type="linksynceparcel/adminhtml_consignment" />
+			<block type="linksynceparcel/adminhtml_displayhelp" template="linksynceparcel/consignment/displayhelp.phtml"/>   
+			<block type="linksynceparcel/adminhtml_labelprinted" template="linksynceparcel/consignment/labelprinted.phtml"/>
+			<block type="linksynceparcel/adminhtml_configurationchecker" template="linksynceparcel/consignment/configurationchecker.phtml"/>
+        </reference>
+    </linksynceparcel_adminhtml_consignment_index>
+	<linksynceparcel_adminhtml_manifest_index>
+        <reference name="content">
+            <block type="linksynceparcel/adminhtml_manifest" />
+			<block type="linksynceparcel/adminhtml_displayhelp" template="linksynceparcel/consignment/displayhelp.phtml"/>   
+			<block type="linksynceparcel/adminhtml_labelprinted" template="linksynceparcel/manifest/hidestatusselector.phtml"/>
+        </reference>
+    </linksynceparcel_adminhtml_manifest_index>
+	<linksynceparcel_adminhtml_search_index>
+        <reference name="content">
+            <block type="linksynceparcel/adminhtml_search"/>
+			<block type="linksynceparcel/adminhtml_displayhelp" template="linksynceparcel/consignment/displayhelp.phtml"/>   
+			<block type="linksynceparcel/adminhtml_configurationchecker" template="linksynceparcel/consignment/configurationchecker.phtml"/>
+        </reference>
+    </linksynceparcel_adminhtml_search_index>
+	<linksynceparcel_adminhtml_manifestconsignments_index>
+        <reference name="content">
+            <block type="linksynceparcel/adminhtml_manifestconsignments"/>
+			<block type="linksynceparcel/adminhtml_displayhelp" template="linksynceparcel/consignment/displayhelp.phtml"/>   
+        </reference>
+    </linksynceparcel_adminhtml_manifestconsignments_index>
+	<linksynceparcel_adminhtml_freeshipping_index>
+        <reference name="content">
+            <block type="linksynceparcel/adminhtml_freeshipping"/>
+			<block type="linksynceparcel/adminhtml_displayhelp" template="linksynceparcel/consignment/displayhelp.phtml"/>   
+        </reference>
+    </linksynceparcel_adminhtml_freeshipping_index>
+	<linksynceparcel_adminhtml_freeshipping_grid>
+        <reference name="content">
+            <block type="linksynceparcel/adminhtml_freeshipping"/>
+			<block type="linksynceparcel/adminhtml_displayhelp" template="linksynceparcel/consignment/displayhelp.phtml"/>   
+        </reference>
+    </linksynceparcel_adminhtml_freeshipping_grid>
+	<linksynceparcel_adminhtml_preset_index>
+        <reference name="content">
+            <block type="linksynceparcel/adminhtml_preset"/>
+			<block type="linksynceparcel/adminhtml_displayhelp" template="linksynceparcel/consignment/displayhelp.phtml"/>   
+        </reference>
+    </linksynceparcel_adminhtml_preset_index>
+	<linksynceparcel_adminhtml_preset_grid>
+        <reference name="content">
+            <block type="linksynceparcel/adminhtml_preset"/>
+			<block type="linksynceparcel/adminhtml_displayhelp" template="linksynceparcel/consignment/displayhelp.phtml"/>   
+        </reference>
+    </linksynceparcel_adminhtml_preset_grid>
+	<linksynceparcel_adminhtml_nonlinksync_index>
+        <reference name="content">
+            <block type="linksynceparcel/adminhtml_nonlinksync"/>
+			<block type="linksynceparcel/adminhtml_displayhelp" template="linksynceparcel/consignment/displayhelp.phtml"/>   
+        </reference>
+    </linksynceparcel_adminhtml_nonlinksync_index>
+	<linksynceparcel_adminhtml_nonlinksync_grid>
+        <reference name="content">
+            <block type="linksynceparcel/adminhtml_nonlinksync"/>
+			<block type="linksynceparcel/adminhtml_displayhelp" template="linksynceparcel/consignment/displayhelp.phtml"/>   
+        </reference>
+    </linksynceparcel_adminhtml_nonlinksync_grid>
+	
+</layout>

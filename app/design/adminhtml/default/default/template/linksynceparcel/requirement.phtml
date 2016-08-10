@@ -1,0 +1,13 @@
+<?php if(!Mage::helper('linksynceparcel')->isSoapInstalled()){?>
+<table width="100%" border="0" cellspacing="0" cellpadding="6">
+	<tr>
+	<td colspan="2" align="left">
+		<span style="color:red"><strong>PHP Soap extension is not enabled on your server, contact your web hoster to enable this extension.</strong></span>
+	</td>
+  </tr>
+</table>
+ <?php } else {?>
+<script>
+$('row_carriers_linksynceparcel_requirement_text').hide();
+</script>
+ <?php } ?>

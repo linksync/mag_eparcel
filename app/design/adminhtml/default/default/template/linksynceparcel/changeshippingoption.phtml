@@ -1,0 +1,51 @@
+<div class="entry-edit" id="eparcel_sales_order_view">
+    <form name="edit_form3" id="edit_form3" method="post" action="<?php echo $this->getUrl('linksynceparcel/changeoption/shipping/'); ?>">
+    	<?php echo $this->getBlockHtml('formkey')?>
+    	<input id="order_id" type="hidden" name="order_id" value="<?php echo $this->getOrder()->getId()?>" />
+        <div class="box">
+            Select Shipping Option&nbsp;&nbsp; 
+            <select id="linksynceparcel_shipping_option" name="linksynceparcel_shipping_option" style="padding:3px" >
+            	<option value="">Please select</option>
+                <?php
+                $options = Mage::helper('linksynceparcel')->getEparcelShippingOptions($this->getOrder()->getShippingMethod(),$this->getOrder()->getShippingDescription(),$this->getOrder()->getId());
+                foreach($options as $method => $option)
+                {
+                    ?>
+                    <option value="<?php echo $method ?>">
+                        <?php echo $option?>
+                    </option>
+                    <?php
+                }
+                ?>
+                
+            </select>
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <button style="" onclick="return submitForm3()" class="scalable save submit-button" type="button" title="Submit"><span><span><span>Change</span></span></span></button>
+        </div>
+	</form>
+</div>
+<div class="clear"></div>
+<script type="text/javascript" src="<?php echo Mage::getBaseUrl('skin').'frontend/base/default/eparcel/js/jquery-1.11.0.min.js';?>"></script>
+<script>
+$jEparcel3 = jQuery.noConflict();
+function submitForm3()
+{
+    var valid = true;
+    var value = $jEparcel3.trim($jEparcel('#linksynceparcel_shipping_option').val());
+    if(value.length == 0 && valid)
+    {
+        valid = false;
+        alert('Please select shipping option');
+        return false;
+    }
+	
+    if(valid)
+    {
+        $('edit_form3').submit();
+    }
+    else
+    {
+        return false;
+    }
+}
+</script>

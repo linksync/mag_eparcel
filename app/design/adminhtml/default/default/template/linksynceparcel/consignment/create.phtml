@@ -1,0 +1,207 @@
+<style>
+.tablecustom input, .tablecustom select{
+	width:200px;
+}
+</style>
+<div class="content-header">
+    <h3 class="icon-head head-sales-order-invoice"><?php echo $this->getHeaderText()?></h3>    
+	<p class="form-buttons">
+	<button style="" onclick="setLocation('<?php echo $this->getBackUrl()?>')" class="scalable back" type="button" title="Back">
+		<span><span><span>Back</span></span></span>
+	</button>
+	<button style="" onclick="setLocation(window.location.href)" class="scalable " type="button" title="Reset">
+		<span><span><span>Reset</span></span></span>
+	</button>
+	</p>
+</div>
+<?php  $_order = $this->getOrder() ?>
+<form name="edit_form" id="edit_form2" method="post" action="">
+    <?php echo $this->getBlockHtml('formkey')?>
+
+    <div class="box">
+		<div>
+		
+		</div>
+		<span class="field-row">
+			<label class="normal" for="shipment_comment_text">
+				<?php echo Mage::helper('sales')->__('Enter the number of articles you would like to allocate for this order into consignment:') ?>
+			</label>
+			<input id="number_of_articles" name="number_of_articles" class="validate-number" />
+			<button style="" onclick="$('edit_form2').submit()" class="scalable save submit-button" type="button" title="Submit"><span><span><span>Allocate</span></span></span></button>
+        </span>
+		
+    </div>
+    <div class="clear"></div>
+
+</form>
+
+<?php if($this->isFormDisplay()):?>
+<?php 
+$numberOfArticles = $this->getNumberOfArticles();
+?>
+<form name="edit_form" id="edit_form" method="post" action="<?php echo $this->getSaveUrl() ?>">
+    <?php echo $this->getBlockHtml('formkey')?>
+	<input id="number_of_articles2" type="hidden" name="number_of_articles" value="<?php echo $numberOfArticles?>" />
+	<input id="order_id" type="hidden" name="order_id" value="<?php echo $this->getOrder()->getId()?>" />
+	<?php for($i=0; $i<$numberOfArticles; $i++):?>
+		<div class="box">
+			<h3>Article <?php echo $i+1?></h3>
+			<span class="field-row1">
+				<label class="normal" for="article_description">
+					<?php echo Mage::helper('sales')->__('Description:') ?><span class="required">*</span>
+				</label>
+				<input id="article_description<?php echo $i+1?>" name="article<?php echo $i+1?>[description]" class="required-entry" value="Article <?php echo $i+1?>"/>
+			</span>
+			<span class="field-row1">
+				<label class="normal" for="article_weight">
+					<?php echo Mage::helper('sales')->__('Weight (Kgs):') ?><span class="required">*</span>
+				</label>
+				<input size="10" style="text-align:center" id="article_weight<?php echo $i+1?>" name="article<?php echo $i+1?>[weight]" class="required-entry positive-number" label="Weight" value="<?php echo Mage::getStoreConfig('carriers/linksynceparcel/default_article_weight')?>"/>
+			</span>
+			<span class="field-row1">
+				<label class="normal" for="article_height">
+					<?php echo Mage::helper('sales')->__('Height (cm):') ?>
+				</label>
+				<input size="10" style="text-align:center" id="article_height<?php echo $i+1?>" class="positive-number" label="Height" name="article<?php echo $i+1?>[height]"  value="<?php echo Mage::getStoreConfig('carriers/linksynceparcel/default_article_height')?>"/>
+			</span>
+			<span class="field-row1">
+				<label class="normal" for="article_width">
+					<?php echo Mage::helper('sales')->__('Width (cm):') ?>
+				</label>
+				<input size="10" style="text-align:center" id="article_width<?php echo $i+1?>" class="positive-number" label="Width" name="article<?php echo $i+1?>[width]" value="<?php echo Mage::getStoreConfig('carriers/linksynceparcel/default_article_width')?>"/>
+			</span>
+			<span class="field-row1">
+				<label class="normal" for="article_length">
+					<?php echo Mage::helper('sales')->__('Length (cm):') ?>
+				</label>
+				<input size="10" style="text-align:center" id="article_length<?php echo $i+1?>" class="positive-number" label="Length" name="article<?php echo $i+1?>[length]" value="<?php echo Mage::getStoreConfig('carriers/linksynceparcel/default_article_length')?>"/>
+			</span>
+		</div>
+	<?php endfor;?>
+	<div class="box">
+			<h3>Consignment Fields</h3>
+			<table width="100%" border="0" cellspacing="6" cellpadding="6" class="tablecustom">
+			  <tr>
+				<td width="20%"><?php echo Mage::helper('sales')->__('Partial Delivery allowed?') ?></td>
+				<td>
+                <?php if(Mage::helper('linksynceparcel')->isDisablePartialDeliveryMethod($_order->getId())): ?>
+                <select id="partial_delivery_allowed" name="partial_delivery_allowed" disabled="disabled">
+					<option value="0">No</option>
+				</select>
+                <?php else: ?>
+                <select id="partial_delivery_allowed" name="partial_delivery_allowed" >
+					<option value="1" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/partial_delivery_allowed')==1?'selected':'')?>>Yes</option>
+					<option value="0" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/partial_delivery_allowed')!=1?'selected':'')?>>No</option>
+				</select>
+                 <?php endif; ?>
+                </td>
+			  </tr>
+			  
+			  <?php if(Mage::helper('linksynceparcel')->isCashToCollect($_order->getId())): ?>
+			  <tr>
+				<td><?php echo Mage::helper('sales')->__('Cash to collect') ?></td>
+				<td><input id="cash_to_collect" name="cash_to_collect" /></td>
+			  </tr>
+			  <?php endif; ?>
+			  
+			  <tr>
+				<td><?php echo Mage::helper('sales')->__('Delivery signature required?') ?></td>
+				<td><select id="delivery_signature_allowed" name="delivery_signature_allowed">
+					<option value="1" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/signature_required')==1?'selected':'')?>>Yes</option>
+					<option value="0" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/signature_required')!=1?'selected':'')?>>No</option>
+				</select></td>
+			  </tr>
+			  <tr>
+				<td><?php echo Mage::helper('sales')->__('Transit cover required?') ?></td>
+				<td><select id="transit_cover_required" name="transit_cover_required">
+					<option value="1" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/insurance')==1?'selected':'')?>>Yes</option>
+					<option value="0" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/insurance')!=1?'selected':'')?>>No</option>
+				</select></td>
+			  </tr>
+			  <tr>
+				<td><?php echo Mage::helper('sales')->__('Transit cover Amount') ?></td>
+				<td><input id="transit_cover_amount" class="positive-number" label="Transit cover amount" name="transit_cover_amount" value="<?php echo Mage::getStoreConfig('carriers/linksynceparcel/default_insurance_value')?>" /></td>
+			  </tr>
+			  <tr>
+				<td><?php echo Mage::helper('sales')->__('Shipment contains dangerous goods?') ?></td>
+				<td><select id="contains_dangerous_goods" name="contains_dangerous_goods" >
+					<option value="1">Yes</option>
+					<option value="0" selected>No</option>
+				</select></td>
+			  </tr>
+			  <tr>
+				<td><?php echo Mage::helper('sales')->__('Print return labels?') ?></td>
+				<td><select id="print_return_labels" name="print_return_labels" >
+					<option value="1" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/print_return_labels')==1?'selected':'')?>>Yes</option>
+					<option value="0" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/print_return_labels')!=1?'selected':'')?>>No</option>
+				</select></td>
+			  </tr>
+              <tr>
+				<td><?php echo Mage::helper('sales')->__('Australia Post email notification?') ?></td>
+				<td><select id="email_notification" name="email_notification">
+					<option value="1" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/post_email_notification')==1?'selected':'')?>>Yes</option>
+					<option value="0" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/post_email_notification')!=1?'selected':'')?>>No</option>
+				</select></td>
+			  </tr>
+              <tr>
+				<td><?php echo Mage::helper('sales')->__('Notify Customers?') ?></td>
+				<td><select id="notify_customers" name="notify_customers">
+					<option value="1" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/notify_customers')==1?'selected':'')?>>Yes</option>
+					<option value="0" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/notify_customers')!=1?'selected':'')?>>No</option>
+				</select></td>
+			  </tr>
+			</table>
+			
+	</div>
+    <div class="clear"></div>
+	
+	<button style="" onclick="return submitForm()" class="scalable save submit-button" type="button" title="Submit"><span><span><span>Create Consignment</span></span></span></button>
+    
+</form>
+<?php endif;?>
+
+<script>
+function submitForm()
+{
+	var valid = true;
+	$jEparcel('.required-entry').each(function(){
+		var value = $jEparcel.trim($jEparcel(this).val());
+		if(value.length == 0 && valid)
+		{
+			valid = false;
+		}
+	});
+	if(!valid)
+	{
+		alert('Please enter all the mandatory fields');
+		return false;
+	}
+	
+	$jEparcel('.positive-number').each(function(){
+		var value = $jEparcel.trim($jEparcel(this).val());
+		var label = $jEparcel(this).attr('label');
+		if(isNaN(value))
+		{
+			alert(label +' should be a number');
+			valid = false;
+		}
+		
+		value = parseInt(value);
+		if(value < 0)
+		{
+			alert(label +' should be a postive number');
+			valid = false;
+		}
+		
+	});
+	
+	if(valid)
+	{
+		$('edit_form').submit();
+	}
+	else
+	{
+		return false;
+	}
+}
+</script>

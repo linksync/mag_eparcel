@@ -1,0 +1,19 @@
+<Orderdetails>
+  <articles>[[articles]]</articles>
+  <deliveryAddress>[[DELIVERY-ADDRESS]]</deliveryAddress>
+  <returnAddress>[[RETURN-ADDRESS]]</returnAddress>
+  <emailAddress>[[CUSTOMER-EMAIL]]</emailAddress>
+  <orderID>[[ORDER-ID]]</orderID>
+  <chargeCode>[[CHARGE-CODE]]</chargeCode>
+  <shipmentID>[[SHIPMENT-ID]]</shipmentID>
+  <embargol>N</embargol>
+  <shipmentSignatureRequired>[[DELIVERY-SIGNATURE]]</shipmentSignatureRequired>
+  <shippingDeclaredValue/>
+  <shipmentContainsDangerousGoods>[[DANGER-GOODS]]</shipmentContainsDangerousGoods>
+  <printReturnLabels>[[printReturnLabels]]</printReturnLabels>
+  <deliverPartConsignment>[[deliverPartConsignment]]</deliverPartConsignment>
+  <emailNotification>[[emailNotification]]</emailNotification>
+  <safeDrop>[[safeDrop]]</safeDrop>
+  [[cashToCollect]]
+  [[cashToCollectAmount]]
+</Orderdetails>

@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<config>
+    <modules>
+        <Linksync_Linksynceparcel>
+            <active>true</active>
+            <codePool>local</codePool>
+        </Linksync_Linksynceparcel>
+    </modules>
+</config>

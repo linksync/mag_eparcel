@@ -1,0 +1,37 @@
+<?php
+$isupgraded = Mage::helper('linksynceparcel')->isupgraded();
+if(!$isupgraded) {
+	$site_url = Mage::getUrl('linksynceparcel');
+	$msg = "linksync eParcel requires a database update to support international consignments. <a href='". $site_url ."'>Click here</a> to complete the upgrade.";
+	?>
+	<div class="notification-global"><?php echo $msg; ?></div>
+	<style>
+	#order_consignment, #searchGrid { display:none; }
+	</style>
+	<?php
+} else {
+	$isDisplaylps = Mage::helper('linksynceparcel')->isDisplayConsignmentViewTableLps();
+	if(!$isDisplaylps) {
+		$site_url = Mage::helper('linksynceparcel')->getSiteUrl();
+		$msg = "Account settings for linksync eParcel configuration are not complete. Please go to ​<em>eParcel >> Settings >> Configuration</em> and complete the setup.";
+		?>
+		<div class="notification-global"><?php echo $msg; ?></div>
+		<style>
+		#order_consignment, #searchGrid { display:none; }
+		</style>
+		<?php
+	}
+
+	$isDisplayShip = Mage::helper('linksynceparcel')->isDisplayConsignmentViewTableShip();
+	if(!$isDisplayShip) {
+		$key = Mage::getModel('adminhtml/url')->getSecretKey('adminhtml_nonlinksync', 'index');
+		$site_url = Mage::getUrl('linksynceparcel/adminhtml_nonlinksync/index/');
+		$msg = "linksync eParcel requires at least one assigned shipping type. <a href='". $site_url."key/".$key ."'>Click here to assign shipping types</a>.";
+		?>
+		<div class="notification-global"><?php echo $msg; ?></div>
+		<style>
+		#order_consignment, #searchGrid { display:none; }
+		</style>
+		<?php
+	}
+}

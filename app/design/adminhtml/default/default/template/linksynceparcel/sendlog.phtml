@@ -1,0 +1,58 @@
+<?php 
+$has_commercial_value = Mage::helper('linksynceparcel')->getStoreConfig('carriers/linksynceparcel_internaltional/has_commercial_value');
+if(empty($has_commercial_value))
+	$has_commercial_value = 1;
+?>
+<button
+    type="button"
+    class="scalable save"
+    onclick="sendLog()">
+    <span><?php echo $this->__('Send Log')?></span>
+</button>
+<script>
+var has_commercial_value = '<?php echo $has_commercial_value?>';
+has_commercial_value = parseInt(has_commercial_value);
+$jEparcel(document).ready(function(){
+	if(has_commercial_value == 1)
+	{
+		$jEparcel("#carriers_linksynceparcel_internaltional_default_product_classification").val(991);
+		$jEparcel("#carriers_linksynceparcel_internaltional_default_product_classification").attr('disabled','disabled');
+	}
+	else
+	{
+		$jEparcel("#carriers_linksynceparcel_internaltional_default_product_classification").removeAttr('disabled');
+	}
+	
+	$jEparcel("#carriers_linksynceparcel_internaltional_has_commercial_value").change(function(){
+		if($jEparcel(this).val() == 1)
+		{
+			$jEparcel("#carriers_linksynceparcel_internaltional_default_product_classification").val(991);
+			$jEparcel("#carriers_linksynceparcel_internaltional_default_product_classification").attr('disabled','disabled');
+		}
+		else
+		{
+			$jEparcel("#carriers_linksynceparcel_internaltional_default_product_classification").removeAttr('disabled');
+		}
+	});
+});
+
+function sendLog()
+{
+	$jEparcel("#ajaxloader").show();
+	$jEparcel.ajax({
+		type: "POST",
+		url: '<?php echo $this->getUrl('linksynceparcel/index/sendlog');?>',
+		success: function(data){
+			$jEparcel("#ajaxloader").hide();
+			data = $jEparcel.trim(data);
+			if(data.length > 0)
+			{
+				alert(data);
+			}
+		}
+	});
+}
+</script>   
+<div id="ajaxloader" style="display:none;padding-top:10px;"> 
+    <img src="<?php echo $this->getSkinUrl('images/ajax-loader-tr.gif');?>">
+</div>

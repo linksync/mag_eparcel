@@ -1,0 +1,14 @@
+		[[deliveryAddressLine1]]
+		[[deliveryAddressLine2]]
+		[[deliveryAddressLine3]]
+		[[deliveryAddressLine4]]
+		[[deliveryCompanyName]]
+		<deliveryCountryCode>AU</deliveryCountryCode>
+		<deliveryEmailAddress>[[deliveryEmailAddress]]</deliveryEmailAddress>
+		[[deliveryInstructions]]
+		<deliveryName>[[deliveryName]]</deliveryName>
+		<deliveryPhoneNumber>[[deliveryPhoneNumber]]</deliveryPhoneNumber>
+		<deliveryPointIdentifier/>
+		<deliveryPostcode>[[deliveryPostcode]]</deliveryPostcode>
+		<deliveryStateCode>[[deliveryStateCode]]</deliveryStateCode>
+		<deliverySuburb>[[deliverySuburb]]</deliverySuburb>

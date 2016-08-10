@@ -1,0 +1,939 @@
+<?php if(Mage::helper('linksynceparcel')->getOrderCarrier($this->getOrder()->getId()) == 'linksynceparcel'):?>
+	<?php 
+	$order = Mage::getModel('sales/order')->load($this->getOrder()->getId());
+	$address = $order->getShippingAddress();
+	$country = $address->getCountry();
+	?>
+	<?php if(!Mage::helper('linksynceparcel')->isAddressValid($this->getOrder()->getId()) && $country == 'AU'):?>
+        <?php echo Mage::helper('sales')->__('Please validate the address before creating consignments.') ?><br /><br />
+        If you consider current address is valid, then please <button style="" onclick="reload()" class="scalable " type="button" title="Reset">
+            <span><span><span>Reload</span></span></span>
+        </button> the page
+        <script type="text/javascript">
+            function reload()
+            {
+                window.location.href = '<?php echo $this->getUrl('adminhtml/sales_order/view', array('order_id'=>$this->getOrder()->getId(),'active_tab' => 'linksync_eparcel'))?>';
+            }
+        </script>
+    <?php else:?>
+        <div class="entry-edit" id="eparcel_sales_order_view">
+            
+            <form name="edit_form" id="edit_form" method="post" action="<?php echo $this->getUrl('linksynceparcel/consignment/save/'); ?>">
+            <?php echo $this->getBlockHtml('formkey')?>
+            <input id="order_id" type="hidden" name="order_id" value="<?php echo $this->getOrder()->getId()?>" />
+            
+            <div class="box" id="presets">
+            
+            <?php if($this->getOrder()->getStatus() != 'complete'){?>
+            
+                Articles&nbsp;&nbsp; <input id="number_of_articles" name="number_of_articles" size="4" value="1" class="validate-number" style="text-align:center; padding:3px" <?php echo ($country != 'AU')?"disabled='disabled'":'';?> />&nbsp;&nbsp;&nbsp;&nbsp;
+                Article Type&nbsp;&nbsp; 
+                <select id="articles_type" name="articles_type" class="required-entry2" style="padding:3px" >
+                    <?php
+                    $presets = Mage::getModel('linksynceparcel/preset')
+                        ->getCollection()
+                        ->addFilter('status', array('eq' => 1));
+                    foreach($presets as $preset)
+                    {
+                        ?>
+                        <option value="<?php echo $preset->getName().'<=>'.$preset->getWeight().'<=>'.$preset->getHeight().'<=>'.$preset->getWidth().'<=>'.$preset->getLength()?>">
+                            <?php echo $preset->getName(). ' ('.$preset->getWeight().'kg - '.$preset->getHeight().'x'.$preset->getWidth().'x'.$preset->getLength().')'?>
+                        </option>
+                        <?php
+                    }
+                    ?>
+                    <option value="Custom">Custom</option>
+                </select>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+            <?php
+                }
+             ?>
+                <button style="" onclick="return submitForm2()" class="create-consignment1 scalable save submit-button <?php if($this->getOrder()->getStatus() == 'complete'){ echo 'disabled';}?>" type="button" title="Submit" <?php if($this->getOrder()->getStatus() == 'complete'){ echo 'disabled="disabled"';}?>><span><span><span>Create Consignment</span></span></span></button>
+                
+            </div>
+            
+            <div class="box custom_articles_template" style="display:none">
+                    <h3>Article</h3>
+                    <span class="field-row1">
+                        <label class="normal" for="article_description">
+                            <?php echo Mage::helper('sales')->__('Description:') ?><span class="required">*</span>
+                        </label>
+                        <input id="article_description" name="article[description]" class="required-entry" value="Article"/>
+                    </span>
+                    <span class="field-row1">
+                        <label class="normal" for="article_weight">
+                            <?php echo Mage::helper('sales')->__('Weight (Kgs):') ?><span class="required">*</span>
+                        </label>
+                        <input size="10" style="text-align:center" id="article_weight" name="article[weight]" class="required-entry positive-number" label="Weight" value="<?php echo Mage::getStoreConfig('carriers/linksynceparcel/default_article_weight')?>"/>
+                    </span>
+                    <span class="field-row1">
+                        <label class="normal" for="article_height">
+                            <?php echo Mage::helper('sales')->__('Height (cm):') ?>
+                        </label>
+                        <input size="10" style="text-align:center" id="article_height" class="positive-number" label="Height" name="article[height]"  value="<?php echo Mage::getStoreConfig('carriers/linksynceparcel/default_article_height')?>"/>
+                    </span>
+                    <span class="field-row1">
+                        <label class="normal" for="article_width">
+                            <?php echo Mage::helper('sales')->__('Width (cm):') ?>
+                        </label>
+                        <input size="10" style="text-align:center" id="article_width" class="positive-number" label="Width" name="article[width]" value="<?php echo Mage::getStoreConfig('carriers/linksynceparcel/default_article_width')?>"/>
+                    </span>
+                    <span class="field-row1">
+                        <label class="normal" for="article_length">
+                            <?php echo Mage::helper('sales')->__('Length (cm):') ?>
+                        </label>
+                        <input size="10" style="text-align:center" id="article_length" class="positive-number" label="Length" name="article[length]" value="<?php echo Mage::getStoreConfig('carriers/linksynceparcel/default_article_length')?>"/>
+                    </span>
+                </div>
+            
+            <div id="custom_articles" style="display:none">
+                
+                <div id="custom_articles_container">
+                </div>
+                
+                <button style="" onclick="backToPreset()" class="scalable back backToPreset" type="button" title="Back">
+                    <span><span><span>Back to Preset</span></span></span>
+                </button>
+                &nbsp;&nbsp;
+                <button style="" onclick="return submitForm()" class="scalable save submit-button <?php if($this->getOrder()->getStatus() == 'complete'){ echo 'disabled';}?>" type="button" title="Submit" <?php if($this->getOrder()->getStatus() == 'complete'){ echo 'disabled="disabled"';}?>><span><span><span>Create Consignment</span></span></span></button>
+                
+            </div>
+            
+            <?php if($this->getOrder()->getStatus() != 'complete'){?>
+             <div>
+                <br />
+                <a href="javascript:void(0)" class="edit-consignments-defaults" style="text-decoration:none"><span style="font-size:13px; color:#F60">Edit Consignment Defaults</span></a>
+                <br />
+                <br />
+             </div>
+            <?php
+                }
+             ?>
+             
+            <div class="box consignment-fields" style="display:none">
+                <h3>Consignment Fields</h3>
+                <table width="100%" border="0" cellspacing="6" cellpadding="6" class="tablecustom">
+				  <tr>
+					<td><?php echo Mage::helper('sales')->__('Delivery instructions') ?></td>
+					<?php 
+						$ordernotes = '';
+						if(Mage::getStoreConfig('carriers/linksynceparcel/copy_order_notes') == 1) {
+							$ordernotes = Mage::helper('linksynceparcel')->getNotes($order);
+						}
+					?>
+					<td><textarea name="delivery_instruction" maxlength="256" cols="40" rows="4"><?php echo $ordernotes; ?></textarea></td>
+				  </tr>
+				<?php if($country == 'AU') : ?>
+                  <tr>
+                    <td width="30%"><?php echo Mage::helper('sales')->__('Partial Delivery allowed?') ?></td>
+                    <td>
+                    <?php if(Mage::helper('linksynceparcel')->isDisablePartialDeliveryMethod($this->getOrder()->getId())): ?>
+                    <select id="partial_delivery_allowed" name="partial_delivery_allowed" disabled="disabled" style="width:140px">
+                        <option value="0">No</option>
+                    </select>
+                    <?php else: ?>
+                    <select id="partial_delivery_allowed" name="partial_delivery_allowed"  style="width:140px">
+                        <option value="1" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/partial_delivery_allowed')==1?'selected':'')?>>Yes</option>
+                        <option value="0" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/partial_delivery_allowed')!=1?'selected':'')?>>No</option>
+                    </select>
+                     <?php endif; ?>
+                    </td>
+                  </tr>
+                  
+                  <?php if(Mage::helper('linksynceparcel')->isCashToCollect($this->getOrder()->getId())): ?>
+                  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Cash to collect') ?></td>
+                    <td><input id="cash_to_collect" name="cash_to_collect" /></td>
+                  </tr>
+                  <?php endif; ?>
+                  
+                  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Delivery signature required?') ?></td>
+                    <td><select id="delivery_signature_allowed" name="delivery_signature_allowed" style="width:140px">
+                        <option value="1" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/signature_required')==1?'selected':'')?>>Yes</option>
+                        <option value="0" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/signature_required')!=1?'selected':'')?>>No</option>
+                    </select></td>
+                  </tr>
+				  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Safe Drop?') ?></td>
+                    <td><select id="safe_drop" name="safe_drop" style="width:140px">
+                        <option value="1" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/safe_drop')==1?'selected':'')?>>Yes</option>
+                        <option value="0" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/safe_drop')!=1?'selected':'')?>>No</option>
+                    </select></td>
+                  </tr>
+                  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Transit cover required?') ?></td>
+                    <td><select id="transit_cover_required" name="transit_cover_required" style="width:140px">
+                        <option value="1" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/insurance')==1?'selected':'')?>>Yes</option>
+                        <option value="0" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/insurance')!=1?'selected':'')?>>No</option>
+                    </select></td>
+                  </tr>
+                  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Transit cover Amount') ?></td>
+                    <td><input id="transit_cover_amount" class="positive-number" label="Transit cover amount" name="transit_cover_amount" value="<?php echo Mage::getStoreConfig('carriers/linksynceparcel/default_insurance_value')?>" /></td>
+                  </tr>
+				<?php endif; ?>
+				<?php if($country != 'AU') : ?>
+				  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Insurance') ?></td>
+                    <td><select id="insurance" name="insurance" style="width:140px">
+                        <option value="1" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/int_insurance')==1?'selected':'')?>>Yes</option>
+                        <option value="0" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/int_insurance')!=1?'selected':'')?>>No</option>
+                    </select></td>
+                  </tr>
+				  <?php
+				    $s_insurance = 'hide-tr';
+					if (Mage::getStoreConfig('carriers/linksynceparcel/int_insurance') == 1){ 
+						$s_insurance = 'show-tr';
+					}
+					$order_value_insurance = 0;
+					if(Mage::getStoreConfig('carriers/linksynceparcel/order_value_insured_value') == 1) {
+						$order_value_insurance = 1;
+					}
+				  ?>
+				  <tr class="order_value_insurance <?php echo $s_insurance; ?>">
+                    <td><?php echo Mage::helper('sales')->__('Order value as Insured Value') ?></td>
+                    <td><select id="order_value_insurance" name="order_value_insurance" style="width:140px">
+                        <option value="1" <?php echo ($order_value_insurance==1?'selected':'')?>>Yes</option>
+                        <option value="0" <?php echo ($order_value_insurance!=1?'selected':'')?>>No</option>
+                    </select></td>
+                  </tr>
+				  <?php 
+					$d_insurance = 'hide-tr';
+					if(empty($order_value_insurance) && Mage::getStoreConfig('carriers/linksynceparcel/int_insurance') == 1){ 
+						$d_insurance = 'show-tr';
+					}
+				  ?>
+				  <tr class="default_insurance_value <?php echo $d_insurance; ?>">
+                    <td><?php echo Mage::helper('sales')->__('Insurance value') ?></td>
+                    <td><input type="text" id="default_insurance_value" name="insurance_value" value="<?php echo Mage::getStoreConfig('carriers/linksynceparcel/default_int_insurance_value')?>" /></td>
+                  </tr>
+				  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Declared Value') ?></td>
+                    <td>
+						<select id="declared_value" name="declared_value" style="width:140px">
+							<option value="0" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/order_value_declared_value')==0?'selected':'')?>>Order Value</option>
+							<option value="1" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/order_value_declared_value')==1?'selected':'')?>>Order Value with Maximum</option>
+							<option value="2" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/order_value_declared_value')==2?'selected':'')?>>Fixed Value</option>
+						</select>
+					</td>
+                  </tr>
+				  <?php
+					$maximum_declared_value_attr = 'hide-tr';
+					$maximum_declared_value = "";
+					if (Mage::getStoreConfig('carriers/linksynceparcel/order_value_declared_value')==1){
+						$maximum_declared_value = Mage::getStoreConfig('carriers/linksynceparcel/maximum_declared_value');
+						$maximum_declared_value_attr = 'show-tr';
+					}
+				  ?>
+				  <tr id="maximum_declared_value_holder" class="<?php echo $maximum_declared_value_attr; ?>">
+                    <td><?php echo Mage::helper('sales')->__('Maximum Declared Value') ?></td>
+                    <td><input type="text" id="maximum_declared_value" name="maximum_declared_value" value="<?php echo $maximum_declared_value; ?>" /></td>
+                  </tr>
+				  <?php
+					$fixed_declared_value_attr = 'hide-tr';
+					$fixed_declared_value = "";
+					if (Mage::getStoreConfig('carriers/linksynceparcel/order_value_declared_value')==2){
+						$fixed_declared_value = Mage::getStoreConfig('carriers/linksynceparcel/fixed_declared_value');
+						$fixed_declared_value_attr = 'show-tr';
+					}
+				  ?>
+				  <tr id="fixed_declared_value_holder" class="<?php echo $fixed_declared_value_attr; ?>">
+                    <td><?php echo Mage::helper('sales')->__('Fixed Declared Value') ?></td>
+                    <td><input type="text" id="fixed_declared_value" name="fixed_declared_value" value="<?php echo $fixed_declared_value; ?>" /></td>
+                  </tr>
+				  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Export Declaration Number') ?></td>
+                    <td><input type="text" id="export_declaration_number" name="export_declaration_number" /></td>
+                  </tr>
+				  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Has Commercial Value?') ?></td>
+                    <td><select id="has_commercial_value" name="has_commercial_value" style="width:140px">
+                        <option value="1" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/has_commercial_value')==1?'selected':'')?>>Yes</option>
+                        <option value="0" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/has_commercial_value')!=1?'selected':'')?>>No</option>
+                    </select></td>
+                  </tr>
+				  <?php 
+					$product_classification_disable = '';
+					$product_classification_value = Mage::getStoreConfig('carriers/linksynceparcel/default_product_classification');
+					if(Mage::getStoreConfig('carriers/linksynceparcel/has_commercial_value')==1) {
+						$product_classification_disable = 'disabled="true"';
+						$product_classification_value = '991';
+					}
+				  ?>
+				  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Product Classification') ?></td>
+                    <td><select id="product_classification" name="product_classification" <?php echo $product_classification_disable; ?>>
+						<option value="991" <?php if ($product_classification_value == '991'){ echo 'selected="selected"'; }?>>Other</option>
+						<option value="32" <?php if ($product_classification_value == '32'){ echo 'selected="selected"'; }?>>Commercial</option>
+						<option value="31" <?php if ($product_classification_value == '31'){ echo 'selected="selected"'; }?>>Gift</option>
+						<option value="91" <?php if ($product_classification_value == '91'){ echo 'selected="selected"'; }?>>Document</option>
+					</select></td>
+                  </tr>
+				  <?php 
+					$product_classification_text = '';
+					$product_classification_option = 'hide-tr';
+					if ($product_classification_value == '991'){ 
+						$product_classification_text = Mage::getStoreConfig('carriers/linksynceparcel/classification_explanation');
+						$product_classification_option = 'show-tr';
+					}
+				  ?>
+				  <tr id="product_classification_text" class="<?php echo $product_classification_option; ?>">
+                    <td><?php echo Mage::helper('sales')->__('Classification Explanation') ?></td>
+                    <td><input type="text" id="product_classification_text" name="product_classification_text" value="<?php echo $product_classification_text; ?>" /></td>
+                  </tr>
+				  <?php 
+					$countryCollection = Mage::getModel('directory/country')->getCollection();
+					$countryOrigin = Mage::getStoreConfig('carriers/linksynceparcel/default_country_origin');
+				  ?>
+                  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Country of Origin') ?></td>
+                    <td>
+						<select id="country_origin" name="country_origin">
+							<option value="" <?php if ($countryOrigin == ''){ echo 'selected="selected"'; }?>>Please select</option>
+							<?php foreach($countryCollection as $country) {?>
+							<option value="<?php echo $country->getCountryId(); ?>" <?php if ($countryOrigin == $country->getCountryId()){ echo 'selected="selected"'; }?>>
+								<?php echo $country->getName(); ?>
+							</option>
+							<?php } ?>
+						</select>
+					</td>
+                  </tr>
+				  <tr>
+                    <td><?php echo Mage::helper('sales')->__('HS Tariff') ?></td>
+                    <td>
+						<input type="text" id="hs_tariff" name="hs_tariff" value="<?php echo Mage::getStoreConfig('carriers/linksynceparcel/default_has_tariff'); ?>" />
+						<span class="comment"><a target="_blank" href="http://www.foreign-trade.com/reference/hscode.htm">Click here for HS Tariff list</a></span>
+					</td>
+                  </tr>
+				  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Contents') ?></td>
+                    <td><input type="text" id="contents" name="contents" value="<?php echo Mage::getStoreConfig('carriers/linksynceparcel/default_contents'); ?>" /></td>
+                  </tr>
+				<?php endif; ?>
+				<?php if($country == 'AU') : ?>
+				  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Shipment contains dangerous goods?') ?></td>
+                    <td><select id="contains_dangerous_goods" name="contains_dangerous_goods" style="width:140px">
+                        <option value="1">Yes</option>
+                        <option value="0" selected>No</option>
+                    </select></td>
+                  </tr>
+                  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Australia Post email notification?') ?></td>
+                    <td><select id="email_notification" name="email_notification" style="width:140px">
+                        <option value="1" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/post_email_notification')==1?'selected':'')?>>Yes</option>
+                        <option value="0" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/post_email_notification')!=1?'selected':'')?>>No</option>
+                    </select></td>
+                  </tr>
+                  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Notify Customers?') ?></td>
+                    <td><select id="notify_customers" name="notify_customers" style="width:140px">
+                        <option value="1" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/notify_customers')==1?'selected':'')?>>Yes</option>
+                        <option value="0" <?php echo (Mage::getStoreConfig('carriers/linksynceparcel/notify_customers')!=1?'selected':'')?>>No</option>
+                    </select></td>
+                  </tr>
+				<?php endif; ?>
+                </table>
+            </div>
+            
+            </form>
+            
+        </div>
+        <?php $consignments = Mage::helper('linksynceparcel')->getConsignments($this->getOrder()->getId(), true);?>
+        <?php 
+            if($consignments && count($consignments) > 0)
+            {
+                //$notDespatchedConsignmentNumbers = Mage::helper('linksynceparcel')->getNotDespatchedConsignmentNumbers();
+            }
+        ?>
+        <?php $_order = $this->getOrder();?>	
+        <?php foreach($consignments as $consignment):?>
+        <?php $articles = Mage::helper('linksynceparcel')->getArticles($this->getOrder()->getId(), $consignment['consignment_number']);?>
+        <?php $intFields = Mage::helper('linksynceparcel')->getInternatioanlConsignments($this->getOrder()->getId(), $consignment['consignment_number']);?>
+        <br/>
+        <div class="clear"></div>
+        <div class="entry-edit">
+            <div class="entry-edit-head" style="padding:5px 16px">
+                <h4 class="icon-head head-products">
+                Consignment: <?php echo $consignment['consignment_number']?>
+                <?php if($consignment['despatched']):?>
+                    (despatched) - <a href="<?php echo $this->getUrl('linksynceparcel/adminhtml_manifestconsignments/index', array('manifest' => $consignment['manifest_number']))?>">manifest <?php echo $consignment['manifest_number']?></a>
+                <?php endif;?>
+                </h4>
+                <span style="float:right; margin-right:4px;">
+                    <a style='background: url("<?php echo Mage::getBaseUrl('skin').'adminhtml/default/default/images/btn_bg.gif'?>") repeat-x scroll 0 100% #FFAC47;
+            border-color: #ED6502 #A04300 #A04300 #ED6502;
+            border-style: solid;
+            border-width: 1px;
+            color: #FFFFFF;
+            cursor: pointer;
+            font: bold 12px arial,helvetica,sans-serif;
+            padding: 3px 7px 3px;
+            text-align: center !important;
+            white-space: nowrap;
+            text-decoration:none;' class="button" target="_blank" href="http://auspost.com.au/track/track.html?id=<?php echo $consignment['consignment_number']?>" type="button" title="Track">
+                        <span><span><span>Track</span></span></span>
+                    </a>
+                    &nbsp;
+                <?php if(!empty($consignment['label'])):?>
+                    <a style='background: url("<?php echo Mage::getBaseUrl('skin').'adminhtml/default/default/images/btn_bg.gif'?>") repeat-x scroll 0 100% #FFAC47;
+            border-color: #ED6502 #A04300 #A04300 #ED6502;
+            border-style: solid;
+            border-width: 1px;
+            color: #FFFFFF;
+            cursor: pointer;
+            font: bold 12px arial,helvetica,sans-serif;
+            padding: 3px 7px 3px;
+            text-align: center !important;
+            white-space: nowrap;
+            text-decoration:none;' class="button print_label" lang="<?php echo $consignment['consignment_number']?>" target="_blank" href="<?php echo $this->getConsignmentLabelUrl().$consignment['label'].'?'.time()?>" type="button" title="Print Label">
+                        <span><span><span>
+                        <?php echo ($consignment['is_label_printed'] ? 'Reprint' : 'Print');?> Label
+                        </span></span></span>
+                    </a>
+                    &nbsp;
+                <?php else:?>
+                    <button style="" onclick="setLocation('<?php echo $this->getConsignmentLabelCreateUrl($consignment['consignment_number'])?>')" type="button" title="Create Label">
+                        <span><span><span>Create Label</span></span></span>
+                    </button>
+                <?php endif;?>
+                <?php if($consignment['print_return_labels']):?>
+                    <?php if($this->isReturnLabelFileExists($consignment['consignment_number'])):?>
+                        <a style='background: url("<?php echo Mage::getBaseUrl('skin').'adminhtml/default/default/images/btn_bg.gif'?>") repeat-x scroll 0 100% #FFAC47;
+                border-color: #ED6502 #A04300 #A04300 #ED6502;
+                border-style: solid;
+                border-width: 1px;
+                color: #FFFFFF;
+                cursor: pointer;
+                font: bold 12px arial,helvetica,sans-serif;
+                padding: 3px 7px 3px;
+                text-align: center !important;
+                white-space: nowrap;
+                text-decoration:none;' class="button print_return_label <?php echo ($consignment['is_return_label_printed'] ? 'printed' : '');?>" lang="<?php echo $consignment['consignment_number']?>" target="_blank" href="<?php echo $this->getConsignmentReturnLabelUrl().$consignment['consignment_number'].'.pdf?'.time()?>" type="button" title="Print Label">
+                            <span><span><span>
+                            <?php echo ($consignment['is_return_label_printed'] ? 'Reprint' : 'Print');?> Return Label
+                            </span></span></span>
+                        </a>
+                        &nbsp;
+                    <?php else:?>
+                        <button style="" onclick="setLocation('<?php echo $this->getConsignmentReturnLabelCreateUrl($consignment['consignment_number'])?>')" type="button" title="Create Return Label">
+                            <span><span><span>Create Return Label</span></span></span>
+                        </button>
+                    <?php endif;?>
+                <?php endif;?>
+                <?php if(!$consignment['despatched']):?>
+					<?php if($country == 'AU'):?>
+						<?php if(count($articles) < 20):?>
+						<button style="" onclick="setLocation('<?php echo $this->getArticleAddUrl($consignment['consignment_number'])?>')" type="button" title="Add Articles">
+							<span><span><span>Add Articles</span></span></span>
+						</button>
+						<?php endif;?>
+						<button style="" onclick="setLocation('<?php echo $this->getConsignmentEditUrl($consignment['consignment_number'])?>')" type="button" title="Delete Consignment">
+							<span><span><span>Edit Consignment</span></span></span>
+						</button>
+					<?php endif;?>
+                    <button style="" onclick="setLocationConfirmDialog('<?php echo $this->getConsignmentDeleteUrl($consignment['consignment_number'])?>')" type="button" title="Delete Consignment">
+                        <span><span><span>Delete Consignment</span></span></span>
+                    </button>
+                <?php endif;?>
+            </div>
+            
+            <div class="box">
+                <table width="100%" border="0" cellspacing="6" cellpadding="6" class="tablecustom">
+                  <tr>
+                    <td width="20%"><?php echo Mage::helper('sales')->__('Delivery instructions') ?></td>
+                    <td><?php echo $consignment['delivery_instruction']; ?></td>
+                  </tr>
+				<?php if($country == 'AU') : ?>
+				  <tr>
+                    <td width="20%"><?php echo Mage::helper('sales')->__('Partial Delivery allowed?') ?></td>
+                    <td><?php echo ($consignment['partial_delivery_allowed']==1?'Yes':'No')?></td>
+                  </tr>
+                  
+                  <?php if(Mage::helper('linksynceparcel')->isCashToCollect($_order->getId())): ?>
+                  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Cash to collect') ?></td>
+                    <td><?php echo $consignment['cash_to_collect']?></td>
+                  </tr>
+                  <?php endif; ?>
+                  
+                  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Delivery signature required?') ?></td>
+                    <td><?php echo ($consignment['delivery_signature_allowed']==1?'Yes':'No')?></td>
+                  </tr>
+				  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Safe Drop') ?></td>
+                    <td><?php echo ($consignment['safe_drop']==1?'Yes':'No')?></td>
+                  </tr>
+				<?php endif; ?>
+				<?php if($country != 'AU') : ?>
+				  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Insurance') ?></td>
+                    <td><?php echo ($intFields['insurance']==1?'Yes':'No')?></td>
+                  </tr>
+				  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Insurance Value') ?></td>
+                    <td><?php echo $intFields['insurance_value']; ?></td>
+                  </tr>
+				  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Export Declaration Number') ?></td>
+                    <td><?php echo $intFields['export_declaration_number']; ?></td>
+                  </tr>
+				  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Has Commercial Value') ?></td>
+                    <td><?php echo ($intFields['has_commercial_value']==1?'Yes':'No'); ?></td>
+                  </tr>
+				  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Product Classification') ?></td>
+					<?php
+						switch($intFields['product_classification']) {
+							case '32':
+								$classification = 'Commercial';
+								break;
+							case '31':
+								$classification = 'Gift';
+								break;
+							case '91':
+								$classification = 'Document';
+								break;
+							default:
+								$classification = 'Other';
+								break;
+						}
+					?>
+                    <td><?php echo $classification; ?></td>
+                  </tr>
+				  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Classification Explanation') ?></td>
+                    <td><?php echo $intFields['product_classification_text']; ?></td>
+                  </tr>
+				  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Country Origin') ?></td>
+                    <td><?php echo $intFields['country_origin']; ?></td>
+                  </tr>
+				  <tr>
+                    <td><?php echo Mage::helper('sales')->__('HS Tariff') ?></td>
+                    <td><?php echo $intFields['hs_tariff']; ?></td>
+                  </tr>
+				  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Contents') ?></td>
+                    <td><?php echo $intFields['default_contents']; ?></td>
+                  </tr>
+				<?php endif; ?>
+				<?php if($country == 'AU') : ?>
+                  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Shipment contains dangerous goods?') ?></td>
+                    <td><?php echo ($consignment['contains_dangerous_goods']==1?'Yes':'No')?></td>
+                  </tr>
+                  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Australia Post email notification?') ?></td>
+                    <td><?php echo ($consignment['email_notification']==1?'Yes':'No')?></td>
+                  </tr>
+                  <tr>
+                    <td><?php echo Mage::helper('sales')->__('Notify Customers?') ?></td>
+                    <td><?php echo ($consignment['notify_customers']==1?'Yes':'No')?></td>
+                  </tr>
+				<?php endif; ?>
+                </table>
+                
+                
+        <div class="grid np">
+          <div class="hor-scroll">
+            <table cellspacing="0" class="data order-tables">
+                <colgroup>
+                <col width="1">
+                <col width="1">
+                <col width="1">
+                <col width="1">
+                <col width="1">
+                <col width="1">
+                <col width="1">
+                </colgroup>
+                <thead>
+                    <tr class="headings">
+                        <th>Article Number</th>
+                        <th>Description</th>
+                        <th class="a-center">Weight (Kgs)</th>
+                        <th class="a-center">Width (cm)</th>
+                        <th class="a-center">Height (cm)</th>
+                        <th class="a-center">Length (cm)</th>
+						<?php if($country == 'AU') : ?>
+                        <th class="a-center">Transit Cover</th>
+                        <th class="a-right">Transit Value</th>
+                        <th class="a-right">Action</th>
+						<?php endif; ?>
+                    </tr>
+                </thead>
+                <tbody class="even">
+                <?php foreach($articles as $article):?>
+                    <tr class="border">
+                        <td class="a-left"><?php echo $article['article_number']?></td>
+                        <td class="a-left"><?php echo $article['article_description']?></td>
+                        <td class="a-center"><?php echo $article['actual_weight']?></td>
+                        <td class="a-center"><?php echo $article['width']?></td>
+                        <td class="a-center"><?php echo $article['height']?></td>
+                        <td class="a-center"><?php echo $article['length']?></td>
+						<?php if($country == 'AU') : ?>
+                        <td class="a-center"><?php echo $article['is_transit_cover_required']?></td>
+                        <td class="a-right"><?php echo (is_numeric($article['transit_cover_amount']) ? number_format($article['transit_cover_amount'],2) : 'NA') ?></td>
+                        <td class="a-right">
+                        <?php if(!$consignment['despatched']):?>
+                            <button style="" onclick="setLocation('<?php echo $this->getArticleEditUrl($consignment['consignment_number'],$article['article_number'])?>')" type="button" title="Edit">
+                                <span><span><span>Edit</span></span></span>
+                            </button>
+                            <button style="" onclick="setLocationConfirmDialog('<?php echo $this->getArticleDeleteUrl($consignment['consignment_number'],$article['article_number'])?>')" type="button" title="Delete">
+                                <span><span><span>Delete</span></span></span>
+                            </button>
+                        <?php else:?>
+                            N/A
+                        <?php endif;?>
+                        </td>
+                        <?php endif;?>
+                    </tr>
+                <?php endforeach;?>
+                   </tbody>
+                </table>           
+          </div>
+        </div>
+            </div>
+            
+        <div class="clear"></div>
+    
+        </div>
+        
+        <?php endforeach;?>
+		<style>
+		.hide-tr {
+			display: none;
+		}
+		.show-tr {
+			display: table-row;
+		}
+		</style>
+        <script type="text/javascript" src="<?php echo Mage::getBaseUrl('skin').'frontend/base/default/eparcel/js/jquery-1.11.0.min.js';?>"></script>
+        <script>
+        $jEparcel = jQuery.noConflict();
+        $jEparcel(document).ready(function(){
+			jQuery('#insurance').change(function() {
+				var insurance = jQuery(this).val();
+				if(insurance == 0) {
+					jQuery('.order_value_insurance').removeClass('show-tr');
+					jQuery('.order_value_insurance').addClass('hide-tr');
+				} else {
+					jQuery('.order_value_insurance').removeClass('hide-tr');
+					jQuery('.order_value_insurance').addClass('show-tr');
+				}
+			});
+			
+			jQuery('#order_value_insurance').change(function() {
+				if($jEparcel(this).val() == 0) {
+					jQuery('.default_insurance_value').removeClass('hide-tr');
+					jQuery('.default_insurance_value').addClass('show-tr');
+					jQuery('#default_insurance_value').val('');
+				} else {
+					jQuery('.default_insurance_value').removeClass('show-tr');
+					jQuery('.default_insurance_value').addClass('hide-tr');
+				}
+			});
+			$jEparcel('#delivery_signature_allowed').on('change', function() {
+				if($jEparcel(this).val() == 1) {
+					$jEparcel('.safe-drop-row').removeClass('hide-tr');
+					$jEparcel('.safe-drop-row').addClass('show-tr');
+				} else {
+					$jEparcel('.safe-drop-row').removeClass('show-tr');
+					$jEparcel('.safe-drop-row').addClass('hide-tr');
+					$jEparcel('#consignments_safe_drop').val(0);
+				}
+			});
+			$jEparcel("#declared_value").on('change', function() {
+				if($jEparcel(this).val() == 2) {
+					$jEparcel('#fixed_declared_value_holder').removeClass('hide-tr');
+					$jEparcel('#fixed_declared_value_holder').addClass('show-tr');
+					$jEparcel('#maximum_declared_value_holder').removeClass('show-tr');
+					$jEparcel('#maximum_declared_value_holder').addClass('hide-tr');
+				} else if($jEparcel(this).val() == 1) {
+					$jEparcel('#maximum_declared_value_holder').removeClass('hide-tr');
+					$jEparcel('#maximum_declared_value_holder').addClass('show-tr');
+					$jEparcel('#fixed_declared_value_holder').removeClass('show-tr');
+					$jEparcel('#fixed_declared_value_holder').addClass('hide-tr');
+				} else {
+					$jEparcel('#maximum_declared_value_holder').removeClass('show-tr');
+					$jEparcel('#maximum_declared_value_holder').addClass('hide-tr');
+					$jEparcel('#fixed_declared_value_holder').removeClass('show-tr');
+					$jEparcel('#fixed_declared_value_holder').addClass('hide-tr');
+				}
+			});
+			$jEparcel('#has_commercial_value').change(function() {
+				if($jEparcel(this).val() == 1) {
+					$jEparcel('#product_classification').attr('disabled', true);
+					$jEparcel('#product_classification').val('991');
+					$jEparcel('#product_classification_text').removeClass("hide-tr");
+					$jEparcel('#product_classification_text').addClass("show-tr");
+				} else {
+					$jEparcel('#product_classification').attr('disabled', false);
+				}
+			});
+			
+			$jEparcel('#product_classification').change(function() {
+				var $this_val = $jEparcel('#product_classification').val();
+				if($this_val == '991') {
+					$jEparcel('#product_classification_text').removeClass("hide-tr");
+					$jEparcel('#product_classification_text').addClass("show-tr");
+				} else {
+					$jEparcel('#product_classification_text').removeClass("show-tr");
+					$jEparcel('#product_classification_text').addClass("hide-tr");
+					$jEparcel('.product_classification_text').val("");
+				}
+			});
+			
+			$jEparcel('#use_default_country_hstariff').change(function() {
+				if($jEparcel(this).val() == 1) {
+					var country_origin_value = $jEparcel('#country_origin').data('default');
+					var hs_tariff_value = $jEparcel('#hs_tariff').data('default');
+					
+					$jEparcel('#country_origin').attr('disabled', true);
+					$jEparcel('#country_origin').val(country_origin_value);
+					$jEparcel('#hs_tariff').attr('disabled', true);
+					$jEparcel('#hs_tariff').val(hs_tariff_value);
+				} else {
+					$jEparcel('#country_origin').attr('disabled', false);
+					$jEparcel('#hs_tariff').attr('disabled', false);
+				}
+			});
+			
+            $jEparcel('.print_label').click(function(){
+                var consignmentNumber = $jEparcel(this).attr('lang');
+                var ajaxCaller = '<?php echo $this->getUrl('linksynceparcel/index/updateLabelAsPrinted/') ?>consignmentNumber/'+consignmentNumber;
+                $jEparcel.ajax({
+                    type: "POST",
+                    url: ajaxCaller,
+                    success: function(data){
+                        ;
+                    }
+                });
+            });
+            
+            $jEparcel('.edit-consignments-defaults').click(function(){
+                $jEparcel('.consignment-fields').slideToggle();
+            });
+            
+            $jEparcel('#number_of_articles').blur(function(){
+                var value = $jEparcel.trim($jEparcel(this).val());
+
+				if(value.length == 0)
+				{
+					alert('Articles should not be empty');
+					$jEparcel(this).val(1);
+				}
+                if(isNaN(value))
+                {
+                    alert('Articles should be a number');
+                    $jEparcel(this).val(1);
+                }
+                
+                value = parseInt(value);
+                if(value < 0)
+                {
+                    alert('Articles should be a postive number');
+                    $jEparcel(this).val(1);
+                }
+                
+                if(value > 100)
+                {
+                    alert('Articles can be 1-100 per request');
+                    $jEparcel(this).val(1);
+                }
+                
+                if($jEparcel('#articles_type > option').length == 1)
+                {
+                    var number_of_articles = $jEparcel('#number_of_articles').val();
+                    var boxes = $jEparcel('#custom_articles_container > div.box').length;
+                    if(boxes > number_of_articles)
+                    {
+                        for(;boxes>number_of_articles; boxes--)
+                        {
+                            $jEparcel('#custom_articles_container > div.box:nth-child('+boxes+')').remove();
+                        }
+                    }
+                    else
+                    {
+                        var i=1 ;
+                        i = i + boxes;
+                        for(;i<=number_of_articles; i++)
+                        {
+                            var box = $jEparcel('.custom_articles_template').clone(); 
+                            box.removeClass('custom_articles_template');
+                            box.find('h3').html(box.find('h3').html()+' '+i);
+                            box.find('#article_description').attr('name','article'+i+'[description]');
+                            box.find('#article_description').val(box.find('#article_description').val()+' '+i);
+                            box.find('#article_weight').attr('name','article'+i+'[weight]');
+                            box.find('#article_height').attr('name','article'+i+'[height]');
+                            box.find('#article_width').attr('name','article'+i+'[width]');
+                            box.find('#article_length').attr('name','article'+i+'[length]');
+                            box.show();
+                            $jEparcel('#custom_articles_container').append(box);
+                        }
+                    }
+                }
+            });
+            
+            if($jEparcel('#articles_type').val() == 'Custom')
+            {
+                $jEparcel('.create-consignment1').hide(); 
+                $jEparcel('.backToPreset').hide(); 
+                $jEparcel('#custom_articles').show(); 
+                    
+                var number_of_articles = $jEparcel('#number_of_articles').val();
+                for(var i=1; i<=number_of_articles; i++)
+                {
+                    var box = $jEparcel('.custom_articles_template').clone(); 
+                    box.removeClass('custom_articles_template');
+                    box.find('h3').html(box.find('h3').html()+' '+i);
+                    box.find('#article_description').attr('name','article'+i+'[description]');
+                    box.find('#article_description').val(box.find('#article_description').val()+' '+i);
+                    box.find('#article_weight').attr('name','article'+i+'[weight]');
+                    box.find('#article_height').attr('name','article'+i+'[height]');
+                    box.find('#article_width').attr('name','article'+i+'[width]');
+                    box.find('#article_length').attr('name','article'+i+'[length]');
+                    box.show();
+                    $jEparcel('#custom_articles_container').append(box);
+                }
+            }
+            
+            $jEparcel('#articles_type').change(function(){
+                if($jEparcel(this).val() == 'Custom')
+                {
+                    $jEparcel('#presets').hide(); 
+                    $jEparcel('#custom_articles').show(); 
+                    
+                    var number_of_articles = $jEparcel('#number_of_articles').val();
+                    for(var i=1; i<=number_of_articles; i++)
+                    {
+                        var box = $jEparcel('.custom_articles_template').clone(); 
+                        box.removeClass('custom_articles_template');
+                        box.find('h3').html(box.find('h3').html()+' '+i);
+                        box.find('#article_description').attr('name','article'+i+'[description]');
+                        box.find('#article_description').val(box.find('#article_description').val()+' '+i);
+                        box.find('#article_weight').attr('name','article'+i+'[weight]');
+                        box.find('#article_height').attr('name','article'+i+'[height]');
+                        box.find('#article_width').attr('name','article'+i+'[width]');
+                        box.find('#article_length').attr('name','article'+i+'[length]');
+                        box.show();
+                        $jEparcel('#custom_articles_container').append(box);
+                    }
+                }
+                else
+                {
+                    $jEparcel('#presets').show();
+                    $jEparcel('#custom_articles').hide(); 
+                    $jEparcel('#custom_articles_container').html(''); 
+                }
+            });
+        });
+        
+        function backToPreset()
+        {
+            $jEparcel('#presets').show();
+            $jEparcel('#custom_articles').hide(); 
+            $jEparcel('#custom_articles_container').html(''); 
+            $jEparcel('#articles_type').val($jEparcel('#articles_type > option:first').attr('value'));
+        }
+        
+        function setLocationConfirmDialog(url)
+        {
+            if(!confirm('Are you sure?'))
+                return false;
+            setLocation(url);
+        }
+        
+        function submitForm()
+        {
+            var valid = true;
+            
+            var value = $jEparcel.trim($jEparcel('#articles_type').val());
+            if(value.length == 0 && valid)
+            {
+                valid = false;
+                alert('Please select article type');
+                return false;
+            }
+            
+            $jEparcel('#custom_articles_container .required-entry').each(function(){
+                var value = $jEparcel.trim($jEparcel(this).val());
+                if(value.length == 0 && valid)
+                {
+                    valid = false;
+                }
+            });
+            if(!valid)
+            {
+                alert('Please enter/select all the mandatory fields');
+                return false;
+            }
+            
+            $jEparcel('.positive-number').each(function(){
+                var value = $jEparcel.trim($jEparcel(this).val());
+                var label = $jEparcel(this).attr('label');
+                if(isNaN(value))
+                {
+                    alert(label +' should be a number');
+                    valid = false;
+                }
+                
+                value = parseInt(value);
+                if(value < 0)
+                {
+                    alert(label +' should be a postive number');
+                    valid = false;
+                }
+                
+            });
+            
+            if(valid)
+            {
+                $('edit_form').submit();
+            }
+            else
+            {
+                return false;
+            }
+        }
+		
+		function submitForm2()
+        {
+            var valid = true;
+            
+            var value = $jEparcel.trim($jEparcel('#articles_type').val());
+            if(value.length == 0 && valid)
+            {
+                valid = false;
+                alert('Please select article type');
+                return false;
+            }
+            
+            $jEparcel('.required-entry2').each(function(){
+                var value = $jEparcel.trim($jEparcel(this).val());
+                if(value.length == 0 && valid)
+                {
+                    valid = false;
+                }
+            });
+            if(!valid)
+            {
+                alert('Please enter/select all the mandatory fields');
+                return false;
+            }
+			
+            if(valid)
+            {
+                $('edit_form').submit();
+            }
+            else
+            {
+                return false;
+            }
+        }
+        </script>
+    <?php endif;?>
+<?php endif;?>

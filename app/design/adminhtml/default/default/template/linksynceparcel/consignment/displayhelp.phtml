@@ -1,0 +1,37 @@
+<?php
+$protocol = 'http';
+if( isset($_SERVER['HTTPS']) && (!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) != 'off') )
+	$protocol = 'https';
+?>
+<link href="<?php echo $protocol?>://ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/themes/smoothness/jquery-ui.css" rel="stylesheet" />
+<script type="text/javascript" src="<?php echo Mage::getBaseUrl('skin').'frontend/base/default/eparcel/js/jquery-1.11.0.min.js';?>"></script>
+<script src="<?php echo $protocol?>://ajax.googleapis.com/ajax/libs/jqueryui/1.9.2/jquery-ui.min.js"></script>
+<script>
+$jEparcel = jQuery.noConflict();
+$jEparcel(document).ready(function(){
+	jQuery('#order_consignment_massaction').find('button').click(function(e) {
+		if(jQuery('#order_consignment_massaction-select').val() == 'create') {
+			var c = checkAllOrders();
+			if(c.length > 0) {
+				var conf = confirm('Consignments already exist for order '+ c.join(', ') +'. Do you want to continue with creating consignments?');
+				if(!conf) {
+					window.location.reload();
+				}
+			}
+		}
+	});
+});
+function checkAllOrders()
+{
+	var allvalues = [];
+	jQuery('.massaction-checkbox:checked').each(function() {
+		var v = jQuery(this).val();
+		var inc_id = jQuery('#increment_'+ v).data('incrementid');
+		var r = v.split("_");
+		if(r[1] != 0) {
+			allvalues.push(inc_id);
+		}
+	});
+	return allvalues;
+}
+</script>

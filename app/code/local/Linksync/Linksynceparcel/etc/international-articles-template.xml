@@ -1,0 +1,9 @@
+<Orderdetails>
+  <articles>[[articles]]</articles>
+  <deliveryAddress>[[DELIVERY-ADDRESS]]</deliveryAddress>
+  <returnAddress>[[RETURN-ADDRESS]]</returnAddress>
+  <orderID>[[ORDER-ID]]</orderID>
+  <chargeCode>[[CHARGE-CODE]]</chargeCode>
+  <shipmentContainsDangerousGoods>false</shipmentContainsDangerousGoods>
+  <isInternationalDelivery>true</isInternationalDelivery>
+</Orderdetails>
