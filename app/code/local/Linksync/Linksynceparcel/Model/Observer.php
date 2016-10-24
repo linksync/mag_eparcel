@@ -161,6 +161,20 @@ class Linksync_Linksynceparcel_Model_Observer
 				Mage::log($message, null, 'linksync_eparcel.log', true);
 			}
 			
+			// Save Chargecode services
+			$services = array(
+				'parcel_post' => 'Parcel Post',
+				'express_post' => 'Express Post eParcel',
+				'int_economy_air' => 'Int. Economy Air',
+				'int_express_courier' => 'Int. Express Courier Document',
+				'int_express_post' => 'Int. Express Post',
+				'int_pack_track' => 'Int. Pack & Track',
+				'int_registered' => 'Int. Registered',
+			);
+			foreach($services as $k=>$service) {
+				Mage::helper('linksynceparcel')->updateServiceData($k);
+			}
+			
 			$laid = trim(Mage::helper('linksynceparcel')->getStoreConfig('carriers/linksynceparcel/laid'));
 			$merchant_location_id = Mage::helper('linksynceparcel')->getStoreConfig('carriers/linksynceparcel/merchant_location_id');
 			

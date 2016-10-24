@@ -23,6 +23,13 @@ if($display)
 	var api_key_note = '<?php echo $note?>';
 	$jEparcel = jQuery.noConflict();
 	$jEparcel(document).ready(function(){
+		var despatchResponseNumber = localStorage.getItem('despatchResponseNumber');
+		var despatchResponse = localStorage.getItem('despatchResponse');
+		if(despatchResponseNumber == 1) {
+			$jEparcel('#messages').html('<ul class="messages">'+ despatchResponse +'</ul>');
+			localStorage.setItem('despatchResponseNumber', 0);
+		}
+		
 		$jEparcel('.head-massaction').hide();
 		$jEparcel('#row_carriers_linksynceparcel_laid p.note').html(api_key_note);
 
@@ -51,7 +58,7 @@ if($display)
 				type: "POST",
 				url: ajaxCaller,
 				success: function(data){
-					location.href = location.href;
+					window.location.reload(true);
 				}
 			});
 		});
@@ -65,10 +72,42 @@ if($display)
 					type: "POST",
 					url: ajaxCaller,
 					success: function(data){
-						location.href = location.href;
+						window.location.reload(true);
 					}
 				});
 			}
+		});
+		
+		$jEparcel('#dialog_submit').click(function(){
+			$jEparcel('#loading-mask').show();
+			$jEparcel("#dialog").dialog("close");
+			var ajaxCaller = '<?php echo $this->getUrl('linksynceparcel/index/processDespatched/') ?>';
+			$jEparcel.ajax({
+				type: "GET",
+				url: ajaxCaller,
+				success: function(data){
+					localStorage.setItem('despatchResponse', data);
+					localStorage.setItem('despatchResponseNumber', 1);
+					window.location.reload(true);
+				}
+			});
+			return false;
+		});
+		
+		$jEparcel('#dialog_submit2').click(function(){
+			$jEparcel('#loading-mask').show();
+			$jEparcel("#dialog2").dialog("close");
+			var ajaxCaller = '<?php echo $this->getUrl('linksynceparcel/index/processDespatched/') ?>';
+			$jEparcel.ajax({
+				type: "GET",
+				url: ajaxCaller,
+				success: function(data){
+					localStorage.setItem('despatchResponse', data);
+					localStorage.setItem('despatchResponseNumber', 1);
+					window.location.reload(true);
+				}
+			});
+			return false;
 		});
 		
 		$jEparcel('#carriers_linksynceparcel_has_commercial_value').change(function() {
@@ -105,6 +144,7 @@ if($display)
 		$jEparcel('<tr class="system-fieldset-sub-head" id="row_carriers_linksynceparcel_domestic"><td colspan="5"><h4 id="domestic">Domestic</h4></td></tr>').insertBefore('#row_carriers_linksynceparcel_insurance');
 		$jEparcel('<tr class="system-fieldset-sub-head" id="row_carriers_linksynceparcel_international"><td colspan="5"><h4 id="international">International</h4></td></tr>').insertBefore('#row_carriers_linksynceparcel_int_insurance');
 		$jEparcel('<tr class="system-fieldset-sub-head" id="row_carriers_linksynceparcel_label"><td colspan="5"><h4 id="label">Label</h4></td></tr>').insertBefore('#row_carriers_linksynceparcel_parcel_post');
+		$jEparcel('<tr class="system-fieldset-sub-head" id="row_carriers_linksynceparcel_services"><td colspan="5"><h4 id="label">Assign Charge Codes</h4></td></tr>').insertBefore('#row_carriers_linksynceparcel_parcel_post_chargecode');
 		$jEparcel('<tr class="system-fieldset-sub-head" id="row_carriers_linksynceparcel_general-settings"><td colspan="5"><h4 id="general-settings">General Settings</h4></td></tr>').insertBefore('#row_carriers_linksynceparcel_copy_order_notes');
 		$jEparcel('<tr class="system-fieldset-sub-head" id="row_carriers_linksynceparcel_linksync-support"><td colspan="5"><h4 id="linksync-support">linksync Support</h4></td></tr>').insertBefore('#row_carriers_linksynceparcel_sendlog');
 	});

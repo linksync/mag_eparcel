@@ -4,7 +4,7 @@
         <carriers>
             <groups>
                 <linksynceparcel translate="label">
-                    <label>linksync eParcel 1.1.3-RC1</label>
+                    <label>linksync eParcel 1.1.4</label>
                     <frontend_type>text</frontend_type>
                     <sort_order>600</sort_order>
                     <show_in_default>1</show_in_default>
@@ -523,135 +523,69 @@
                             <show_in_store>0</show_in_store>
                         </express_post_top_offset>
 						
-						<int_economy_air translate="label">
-                            <label>Int. Economy Air</label>
+						<parcel_post_chargecode translate="label">
+                            <label>Parcel Post</label>
                             <frontend_type>select</frontend_type>
-                            <source_model>linksynceparcel/system_config_source_internationaloptions</source_model>
+                            <source_model>linksynceparcel/system_config_source_parcelpostchargecode</source_model>
                             <sort_order>60</sort_order>
-                            <show_in_default>0</show_in_default>
-                            <show_in_website>0</show_in_website>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
-                        </int_economy_air>
-						<int_economy_air_left_offset translate="label">
-                            <label>Int. Economy Air Left Offset</label>
-                            <frontend_type>text</frontend_type>
+                        </parcel_post_chargecode>
+						<express_post_chargecode translate="label">
+                            <label>Express Post eParcel</label>
+                            <frontend_type>select</frontend_type>
+                            <source_model>linksynceparcel/system_config_source_expressparcelpostchargecode</source_model>
                             <sort_order>61</sort_order>
-                            <show_in_default>0</show_in_default>
-                            <show_in_website>0</show_in_website>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
                             <show_in_store>0</show_in_store>
-                        </int_economy_air_left_offset>
-						<int_economy_air_top_offset translate="label">
-                            <label>Int. Economy Air Top Offset</label>
-                            <frontend_type>text</frontend_type>
-                            <sort_order>62</sort_order>
-                            <show_in_default>0</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                        </int_economy_air_top_offset>
-						
-						<int_express_courier translate="label">
-                            <label>Int. Express Courier</label>
-                            <frontend_type>select</frontend_type>
-                            <source_model>linksynceparcel/system_config_source_internationaloptions</source_model>
-                            <sort_order>65</sort_order>
-                            <show_in_default>0</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                        </int_express_courier>
-						<int_express_courier_left_offset translate="label">
-                            <label>Int. Express Courier Left Offset</label>
-                            <frontend_type>text</frontend_type>
-                            <sort_order>66</sort_order>
-                            <show_in_default>0</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                        </int_express_courier_left_offset>
-						<int_express_courier_top_offset translate="label">
-                            <label>Int. Express Courier Top Offset</label>
-                            <frontend_type>text</frontend_type>
-                            <sort_order>67</sort_order>
-                            <show_in_default>0</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                        </int_express_courier_top_offset>
-						
-						<int_express_post translate="label">
-                            <label>Int. Express Post</label>
-                            <frontend_type>select</frontend_type>
-                            <source_model>linksynceparcel/system_config_source_internationaloptions</source_model>
-                            <sort_order>70</sort_order>
-                            <show_in_default>0</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                        </int_express_post>
-						<int_express_post_left_offset translate="label">
-                            <label>Int. Express Post Left Offset</label>
-                            <frontend_type>text</frontend_type>
-                            <sort_order>71</sort_order>
-                            <show_in_default>0</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                        </int_express_post_left_offset>
-						<int_express_post_top_offset translate="label">
-                            <label>Int. Express Post Top Offset</label>
-                            <frontend_type>text</frontend_type>
-                            <sort_order>72</sort_order>
-                            <show_in_default>0</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                        </int_express_post_top_offset>
-						
-						<int_pack_track translate="label">
-                            <label>Int. Pack and Track</label>
-                            <frontend_type>select</frontend_type>
-                            <source_model>linksynceparcel/system_config_source_internationaloptions</source_model>
-                            <sort_order>75</sort_order>
-                            <show_in_default>0</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                        </int_pack_track>
-						<int_pack_track_left_offset translate="label">
-                            <label>Int. Pack and Track Left Offset</label>
-                            <frontend_type>text</frontend_type>
-                            <sort_order>76</sort_order>
-                            <show_in_default>0</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                        </int_pack_track_left_offset>
-						<int_pack_track_top_offset translate="label">
-                            <label>Int. Pack and Track Top Offset</label>
-                            <frontend_type>text</frontend_type>
-                            <sort_order>77</sort_order>
-                            <show_in_default>0</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                        </int_pack_track_top_offset>
-						
-						<int_registered translate="label">
-                            <label>Int. Registered</label>
-                            <frontend_type>select</frontend_type>
-                            <source_model>linksynceparcel/system_config_source_internationaloptions</source_model>
-                            <sort_order>80</sort_order>
-                            <show_in_default>0</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                        </int_registered>
-						<int_registered_left_offset translate="label">
-                            <label>Int. Registered Left Offset</label>
-                            <frontend_type>text</frontend_type>
-                            <sort_order>81</sort_order>
-                            <show_in_default>0</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                        </int_registered_left_offset>
-						<int_registered_top_offset translate="label">
-                            <label>Int. Registered Top Offset</label>
-                            <frontend_type>text</frontend_type>
-                            <sort_order>82</sort_order>
-                            <show_in_default>0</show_in_default>
-                            <show_in_website>0</show_in_website>
-                            <show_in_store>0</show_in_store>
-                        </int_registered_top_offset>
+                        </express_post_chargecode>
+						<int_economy_air_chargecode translate="label">
+							<label>Int. Economy Air</label>
+							<frontend_type>select</frontend_type>
+							<source_model>linksynceparcel/system_config_source_inteconomyairchargecode</source_model>
+							<sort_order>62</sort_order>
+							<show_in_default>1</show_in_default>
+							<show_in_website>1</show_in_website>
+							<show_in_store>0</show_in_store>
+						</int_economy_air_chargecode>
+						<int_express_courier_chargecode translate="label">
+							<label>Int. Express Courier Document</label>
+							<frontend_type>select</frontend_type>
+							<source_model>linksynceparcel/system_config_source_intexpresscourierchargecode</source_model>
+							<sort_order>63</sort_order>
+							<show_in_default>1</show_in_default>
+							<show_in_website>1</show_in_website>
+							<show_in_store>0</show_in_store>
+						</int_express_courier_chargecode>
+						<int_express_post_chargecode translate="label">
+							<label>Int. Express Post</label>
+							<frontend_type>select</frontend_type>
+							<source_model>linksynceparcel/system_config_source_intexpresspostchargecode</source_model>
+							<sort_order>64</sort_order>
+							<show_in_default>1</show_in_default>
+							<show_in_website>1</show_in_website>
+							<show_in_store>0</show_in_store>
+						</int_express_post_chargecode>
+						<int_pack_track_chargecode translate="label">
+							<label>Int. Pack and Track</label>
+							<frontend_type>select</frontend_type>
+							<source_model>linksynceparcel/system_config_source_intpacktrackchargecode</source_model>
+							<sort_order>66</sort_order>
+							<show_in_default>1</show_in_default>
+							<show_in_website>1</show_in_website>
+							<show_in_store>0</show_in_store>
+						</int_pack_track_chargecode>
+						<int_registered_chargecode translate="label">
+							<label>Int. Registered</label>
+							<frontend_type>select</frontend_type>
+							<source_model>linksynceparcel/system_config_source_intregisteredchargecode</source_model>
+							<sort_order>67</sort_order>
+							<show_in_default>1</show_in_default>
+							<show_in_website>1</show_in_website>
+							<show_in_store>0</show_in_store>
+						</int_registered_chargecode>
 						
 						<copy_order_notes translate="label">
                             <label>Copy order notes to label?</label>

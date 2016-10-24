@@ -1,0 +1,11 @@
+<?php
+$installer = $this;
+$installer->startSetup();
+
+$installer->run("
+	ALTER TABLE {$this->getTable('linksync_linksynceparcel_nonlinksync')} 
+		ADD `service_type` varchar(100);
+");
+
+$installer->endSetup(); 
+?>

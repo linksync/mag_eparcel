@@ -88,8 +88,10 @@ class Linksync_Linksynceparcel_Adminhtml_NonlinksyncController extends Mage_Admi
             $id = $this->getRequest()->getParam('id');
             if ($id) {
                 $model->load($id);
-                
             } 
+			
+			$data['service_type'] = Mage::helper('linksynceparcel')->getChargecodeData($data['charge_code']);
+			
             $model->setData($data);
 
             Mage::getSingleton('adminhtml/session')->setFormData($data);

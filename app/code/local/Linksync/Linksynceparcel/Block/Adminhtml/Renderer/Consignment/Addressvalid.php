@@ -11,8 +11,13 @@ class Linksync_Linksynceparcel_Block_Adminhtml_Renderer_Consignment_Addressvalid
 		$address = $order->getShippingAddress();
 		$country = $address->getCountry();
 		if($country == 'AU') {
+			$isValid = Mage::helper('linksynceparcel')->isOrderAddressValid($orderId);
 			$valid =  $row->getData($this->getColumn()->getIndex());
 			if($valid)
+			{
+				$imgLink = $this->getSkinUrl("linksynceparcel/images/icon-enabled.png");
+			}
+			elseif($isValid) 
 			{
 				$imgLink = $this->getSkinUrl("linksynceparcel/images/icon-enabled.png");
 			}

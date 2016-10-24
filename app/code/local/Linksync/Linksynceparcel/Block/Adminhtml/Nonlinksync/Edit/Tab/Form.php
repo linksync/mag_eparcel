@@ -17,11 +17,11 @@ class Linksync_Linksynceparcel_Block_Adminhtml_Nonlinksync_Edit_Tab_Form extends
         ));
 		
         $fieldset->addField('charge_code', 'select', array(
-            'label' => Mage::helper('linksynceparcel')->__('Charge Code'),
+            'label' => Mage::helper('linksynceparcel')->__('Services'),
             'class' => 'required-entry',
             'required' => true,
             'name' => 'charge_code',
-			'values' => Mage::helper('linksynceparcel')->getChargeCodeOptions(true),
+			'values' => Mage::helper('linksynceparcel')->getServiceOptions(),
         ));
 
         if (Mage::getSingleton('adminhtml/session')->getNonlinksyncData()) {

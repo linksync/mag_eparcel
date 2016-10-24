@@ -298,7 +298,7 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 		return str_replace($search, $replace, $template);
 	}	
 	
-	public function prepareArticleData($data,$order,$consignment_number='')
+	public function prepareArticleData($data,$order,$consignment_number="")
 	{
 		$deliveryAddress  = $order->getShippingAddress()->getData();
 		$chargeCode = $this->getChargeCode($order,$consignment_number);
@@ -306,6 +306,15 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 		$shipAddress = $order->getShippingAddress();
 		$country = $shipAddress->getCountry();
 		$total_weight = 0;
+
+		$combinations = $this->getCombination($chargeCode);
+		if($combinations) {
+			$validateCombination = $this->validateCombination($data, $combinations, $chargeCode);
+			if(is_array($validateCombination)) {
+				return $validateCombination;
+			}
+		}
+
 		if($country != 'AU') {
 			$returnInternationalAddress = $this->prepareInternationalReturnAddress($storeId);
 			$deliveryInternationalInfo = $this->prepareInternationalDeliveryAddress($deliveryAddress,$order,$data,$country);
@@ -386,6 +395,15 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 		$shipAddress = $order->getShippingAddress();
 		$country = $shipAddress->getCountry();
 		$total_weight = 0;
+
+		$combinations = $this->getCombination($chargeCode);
+		if($combinations) {
+			$validateCombination = $this->validateCombination($data, $combinations, $chargeCode);
+			if(is_array($validateCombination)) {
+				return $validateCombination;
+			}
+		}
+
 		if($country != 'AU') {
 			$returnInternationalAddress = $this->prepareInternationalReturnAddress($storeId);
 			$deliveryInternationalInfo = $this->prepareInternationalDeliveryAddress($deliveryAddress,$order,$data,$country);
@@ -462,6 +480,15 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 		$shipAddress = $order->getShippingAddress();
 		$country = $shipAddress->getCountry();
 		$total_weight = 0;
+
+		$combinations = $this->getCombination($chargeCode);
+		if($combinations) {
+			$validateCombination = $this->validateCombination($data, $combinations, $chargeCode);
+			if(is_array($validateCombination)) {
+				return $validateCombination;
+			}
+		}
+
 		if($country != 'AU') {
 			$returnInternationalAddress = $this->prepareInternationalReturnAddress($storeId);
 			$deliveryInternationalInfo = $this->prepareInternationalDeliveryAddress($deliveryAddress,$order,$data,$country);
@@ -805,7 +832,7 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 		{
 			if($data['articles_type'] == 'Custom')
 			{
-        		$article = $data['article'.$i];
+        				$article = $data['article'.$i];
 			}
 			else
 			{
@@ -815,9 +842,9 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 				$article = array();
 				$article['description'] = trim($articles[0]);
 				$article['weight'] = $articles[1];
-				$article['height'] = $articles[2];
-				$article['length'] = $articles[3];
-				$article['width'] = $articles[4];
+				$article['height'] = trim($articles[2]);
+				$article['width'] = trim($articles[3]);
+				$article['length'] = trim($articles[4]);
 				
 				$use_order_total_weight = (int)Mage::getStoreConfig('carriers/linksynceparcel/use_order_total_weight');
 				if($use_order_total_weight == 1)
@@ -861,8 +888,9 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 				$article['weight'] = $data['default_order_weight'];
 			}
 			
-			$article['weight'] = number_format($article['weight'],2, '.', '');
+			$article['weight'] = $this->roundoff_number($article['weight'],2);
 			$total_weight += $article['weight'];
+			$article['weight'] = $this->calculateWeightDefault($article['weight']);
 			
 			if($international) {
 				$search = array(
@@ -883,6 +911,7 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 				
 				$template = file_get_contents($this->getTemplatePath().DS.'international-article-template.xml');
 			} else {
+
 				$search = array(
 					'[[actualWeight]]',
 					'[[articleDescription]]',
@@ -896,11 +925,11 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 			
 			
 				$replace = array(
-					$article['weight'],
+					trim($article['weight']),
 					$this->xmlData($article['description']),
-					$article['height'],
-					$article['length'],
-					'<width>'.$article['width'].'</width>',
+					0,
+					0,
+					'<width>'. 0 .'</width>',
 					($data['transit_cover_required'] ? 'Y' : 'N'),
 					($data['transit_cover_required'] ? $data['transit_cover_amount'] : 0),
 					(isset($article['article_number']) ? '<articleNumber>'.$article['article_number'].'</articleNumber>' : '')
@@ -938,17 +967,19 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 				$article = array();
 				$article['description'] = $articles[0];
 				$article['weight'] = $articles[1];
-				$article['height'] = $articles[2];
-				$article['length'] = $articles[3];
-				$article['width'] = $articles[4];
+				$article['height'] = trim($articles[2]);
+				$article['width'] = trim($articles[3]);
+				$article['length'] = trim($articles[4]);
 			}
 			
 			if($data['edit_order_weight'] == 1) {
 				$article['weight'] = $data['default_order_weight'];
 			}
 			
-			$article['weight'] = number_format($article['weight'],2,'.', '');
+			$article['weight'] = $this->roundoff_number($article['weight'],2);
 			$totalWeight += $article['weight'];
+
+			$article['weight'] = $this->calculateWeightDefault($article['weight']);
 				
 			if($isInternational) {
 				$search = array(
@@ -960,7 +991,7 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 				);
 
 				$replace = array(
-					self::xmlData(trim($article['description'])),
+					$this->xmlData(trim($article['description'])),
 					trim($article['weight']),
 					0,
 					0,
@@ -1044,8 +1075,10 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 				$article['length'] = 0;
 				$article['width'] = 0;
 				
-				$article['weight'] = number_format($article['weight'],2,'.', '');
+				$article['weight'] = $this->roundoff_number($article['weight'],2);
 				$total_weight += $article['weight'];
+
+				$article['weight'] = $this->calculateWeightDefault($article['weight']);
 				
 				if($international) {
 					$search = array(
@@ -1057,11 +1090,11 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 					);
 
 					$replace = array(
-						self::xmlData(trim($article['description'])),
+						$this->xmlData(trim($article['description'])),
 						trim($article['weight']),
-						trim($article['width']),
-						trim($article['height']),
-						trim($article['length'])
+						$this->zeroIfEmpty($article['width']),
+						$this->zeroIfEmpty($article['height']),
+						$this->zeroIfEmpty($article['length'])
 					);
 					
 					$template = file_get_contents($this->getTemplatePath().DS.'international-article-template.xml');
@@ -1078,11 +1111,11 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 					);
 					
 					$replace = array(
-						$article['weight'],
+						trim($article['weight']),
 						$this->xmlData($article['description']),
-						$article['height'],
-						$article['length'],
-						'<width>'.$article['width'].'</width>',
+						$this->zeroIfEmpty($article['height']),
+						$this->zeroIfEmpty($article['length']),
+						'<width>'. $this->zeroIfEmpty($article['width']) .'</width>',
 						($data['transit_cover_required'] ? 'Y' : 'N'),
 						($data['transit_cover_required'] ? $data['transit_cover_amount'] : 0),
 						''
@@ -1127,9 +1160,9 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 				{
 					$article = array();
 					$article['description'] = $articles[0];
-					$article['height'] = $articles[2];
-					$article['length'] = $articles[3];
-					$article['width'] = $articles[4];
+					$article['height'] = trim($articles[2]);
+					$article['width'] = trim($articles[3]);
+					$article['length'] = trim($articles[4]);
 					
 					if($reminderWeight > 0 && $i == $totalArticles)
 					{
@@ -1140,8 +1173,10 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 						$article['weight'] = $weightPerArticle;
 					}
 					
-					$article['weight'] = number_format($article['weight'],2,'.', '');
+					$article['weight'] = $this->roundoff_number($article['weight'],2);
 					$total_weight += $article['weight'];
+
+					$article['weight'] = $self->calculateWeightDefault($article['weight']);
 					
 					if($international) {
 						$search = array(
@@ -1153,11 +1188,11 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 						);
 
 						$replace = array(
-							self::xmlData(trim($article['description'])),
+							$this->xmlData(trim($article['description'])),
 							trim($article['weight']),
-							trim($article['width']),
-							trim($article['height']),
-							trim($article['length'])
+							$this->zeroIfEmpty($article['width']),
+							$this->zeroIfEmpty($article['height']),
+							$this->zeroIfEmpty($article['length'])
 						);
 						
 						$template = file_get_contents($this->getTemplatePath().DS.'international-article-template.xml');
@@ -1175,11 +1210,11 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 						);
 					
 						$replace = array(
-							$article['weight'],
+							trim($article['weight']),
 							$this->xmlData($article['description']),
-							$article['height'],
-							$article['length'],
-							'<width>'.$article['width'].'</width>',
+							$this->zeroIfEmpty($article['height']),
+							$this->zeroIfEmpty($article['length']),
+							'<width>'. $this->zeroIfEmpty($article['width']) .'</width>',
 							($data['transit_cover_required'] ? 'Y' : 'N'),
 							($data['transit_cover_required'] ? $data['transit_cover_amount'] : 0),
 							''
@@ -1195,12 +1230,14 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 				$article = array();
 				$article['description'] = $articles[0];
 				$article['weight'] = $articles[1];
-				$article['height'] = $articles[2];
-				$article['length'] = $articles[3];
-				$article['width'] = $articles[4];
+				$article['height'] = trim($articles[2]);
+				$article['length'] = trim($articles[3]);
+				$article['width'] = trim($articles[4]);
 				
-				$article['weight'] = number_format($article['weight'],2,'.', '');
+				$article['weight'] = $this->roundoff_number($article['weight'],2);
 				$total_weight += $article['weight'];
+
+				$article['weight'] = $this->calculateWeightDefault($article['weight']);
 				
 				if($international) {
 					$search = array(
@@ -1212,11 +1249,11 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 					);
 
 					$replace = array(
-						self::xmlData(trim($article['description'])),
+						$this->xmlData(trim($article['description'])),
 						trim($article['weight']),
-						trim($article['width']),
-						trim($article['height']),
-						trim($article['length'])
+						$this->zeroIfEmpty($article['width']),
+						$this->zeroIfEmpty($article['height']),
+						$this->zeroIfEmpty($article['length'])
 					);
 					
 					$template = file_get_contents($this->getTemplatePath().DS.'international-article-template.xml');
@@ -1233,11 +1270,11 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 					);
 					
 					$replace = array(
-						$article['weight'],
+						trim($article['weight']),
 						$this->xmlData($article['description']),
-						$article['height'],
-						$article['length'],
-						'<width>'.$article['width'].'</width>',
+						$this->zeroIfEmpty($article['height']),
+						$this->zeroIfEmpty($article['length']),
+						'<width>'. $this->zeroIfEmpty($article['width']) .'</width>',
 						($data['transit_cover_required'] ? 'Y' : 'N'),
 						($data['transit_cover_required'] ? $data['transit_cover_amount'] : 0),
 						''
@@ -1279,15 +1316,17 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 				$default_width = Mage::getStoreConfig('carriers/linksynceparcel/default_article_width');
 			}
 			
-			$article['weight'] = number_format($article['weight'],2,'.', '');
+			$article['weight'] = $this->roundoff_number($article['weight'],2);
 			$total_weight += $article['actual_weight'];
+
+			$article['actual_weight'] = $this->calculateWeightDefault($article['actual_weight']);
 		
 			$replace = array(
-				$article['actual_weight'],
+				trim($article['actual_weight']),
 				trim($article['article_description']),
-				$article['height'],
-				$article['length'],
-				($article['width'] ? '<width>'.$article['width'].'</width>' : '<width>'.$default_width.'</width>'),
+				$this->zeroIfEmpty($article['height']),
+				$this->zeroIfEmpty($article['length']),
+				($article['width'] ? '<width>'. $this->zeroIfEmpty($article['width']) .'</width>' : '<width>'.$default_width.'</width>'),
 				$article['is_transit_cover_required'],
 				(($article['is_transit_cover_required'] == 'Y') ? $article['transit_cover_amount'] : 0),
 				'<articleNumber>'.$article['article_number'].'</articleNumber>'
@@ -1322,14 +1361,17 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 			if($article['article_number'] == $data['article_number'])
 			{
 				$article = $data['article'];
-				$article['weight'] = number_format($article['weight'],2,'.', '');
+				$article['weight'] = $this->roundoff_number($article['weight'],2);
 				$total_weight += $article['weight'];
+
+				$article['weight'] = $this->calculateWeightDefault($article['weight']);
+
 				$replace = array(
-					$article['weight'],
+					trim($article['weight']),
 					$this->xmlData($article['description']),
-					$article['height'],
-					$article['length'],
-					'<width>'.$article['width'].'</width>',
+					$this->zeroIfEmpty($article['height']),
+					$this->zeroIfEmpty($article['length']),
+					'<width>'. $this->zeroIfEmpty($article['width']) .'</width>',
 					($data['transit_cover_required'] ? 'Y' : 'N'),
 					($data['transit_cover_required'] ? $data['transit_cover_amount'] : 0),
 				''
@@ -1344,14 +1386,17 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 					$default_width = Mage::getStoreConfig('carriers/linksynceparcel/default_article_width');
 				}
 				
-				$article['weight'] = number_format($article['weight'],2,'.', '');
+				$article['weight'] = $this->roundoff_number($article['weight'],2);
 				$total_weight += $article['actual_weight'];
+
+				$article['actual_weight'] = $this->calculateWeightDefault($article['actual_weight']);
+
 				$replace = array(
-					$article['actual_weight'],
+					trim($article['actual_weight']),
 					trim($article['article_description']),
-					$article['height'],
-					$article['length'],
-					($article['width'] ? '<width>'.$article['width'].'</width>' : '<width>'.$default_width.'</width>'),
+					$this->zeroIfEmpty($article['height']),
+					$this->zeroIfEmpty($article['length']),
+					($article['width'] ? '<width>'. $this->zeroIfEmpty($article['width']) .'</width>' : '<width>'.$default_width.'</width>'),
 					$article['is_transit_cover_required'],
 					($article['transit_cover_amount'] ? $article['transit_cover_amount'] : 0),
 					'<articleNumber>'.$article['article_number'].'</articleNumber>'
@@ -1393,8 +1438,10 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 				'[[articleNumber]]'
 			);
 		
-			$article['weight'] = number_format($article['weight'],2,'.', '');
+			$article['weight'] = $this->roundoff_number($article['weight'],2);
 			$total_weight += $article['actual_weight'];
+
+			$article['actual_weight'] = $this->calculateWeightDefault($article['actual_weight']);
 			
 			$default_width = 0;
 			$use_article_dimensions = (int)Mage::getStoreConfig('carriers/linksynceparcel/use_article_dimensions');
@@ -1404,11 +1451,11 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 			}
 			
 			$replace = array(
-				$article['actual_weight'],
+				trim($article['actual_weight']),
 				trim($article['article_description']),
-				$article['height'],
-				$article['length'],
-				($article['width'] ? '<width>'.$article['width'].'</width>' : '<width>'.$default_width.'</width>'),
+				$this->zeroIfEmpty($article['height']),
+				$this->zeroIfEmpty($article['length']),
+				($article['width'] ? '<width>'. $this->zeroIfEmpty($article['width']) .'</width>' : '<width>'.$default_width.'</width>'),
 				$article['is_transit_cover_required'],
 				( ($article['is_transit_cover_required'] == 'Y') ? $article['transit_cover_amount'] : 0),
 				'<articleNumber>'.$article['article_number'].'</articleNumber>'
@@ -1441,9 +1488,9 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 			$article = array();
 			$article['description'] = $articles[0];
 			$article['weight'] = $articles[1];
-			$article['height'] = $articles[2];
-			$article['length'] = $articles[3];
-			$article['width'] = $articles[4];
+			$article['height'] = trim($articles[2]);
+			$article['width'] = trim($articles[3]);
+			$article['length'] = trim($articles[4]);
 			
 			$use_order_total_weight = (int)Mage::getStoreConfig('carriers/linksynceparcel/use_order_total_weight');
 			if($use_order_total_weight == 1)
@@ -1466,15 +1513,17 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 			}
 		}
 		
-		$article['weight'] = number_format($article['weight'],2,'.', '');
+		$article['weight'] = $this->roundoff_number($article['weight'],2);
 		$total_weight += $article['weight'];
+
+		$article['weight'] = $this->calculateWeightDefault($article['weight']);
 	
 		$replace = array(
-			$article['weight'],
+			trim($article['weight']),
 			$this->xmlData($article['description']),
-			$article['height'],
-			$article['length'],
-			'<width>'.$article['width'].'</width>',
+			$this->zeroIfEmpty($article['height']),
+			$this->zeroIfEmpty($article['length']),
+			'<width>'. $this->zeroIfEmpty($article['width']) .'</width>',
 			($data['transit_cover_required'] ? 'Y' : 'N'),
 			($data['transit_cover_required'] ? $data['transit_cover_amount'] : 0),
 			''
@@ -4621,6 +4670,62 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 		return $chargeCodes;
 	}
 	
+	public function getChargecodeData($chargecode)
+	{
+		$chargeCodes = $this->getChargeCodes();
+		return $chargeCodes[$chargecode]['key'];
+	}
+	
+	public function getChargecodesByService($service)
+	{
+		$chargeCodes = $this->getChargeCodes();
+		$options = array();
+		$options[] = array('value' => '', 'label' => 'Please Select Chargecode');
+		foreach($chargeCodes as $chargeCode=>$chargeLabel)
+		{
+			if($service == $chargeLabel['key']) {
+				$option = array('value' => $chargeCode, 'label' => $chargeCode);
+				$options[] = $option;
+			}
+		}
+		return $options;
+	}
+	
+	public function getServiceOptions()
+	{
+		$services = array(
+			'parcel_post' => 'Parcel Post',
+			'express_post' => 'Express Post eParcel',
+			'int_economy_air' => 'Int. Economy Air',
+			'int_express_courier' => 'Int. Express Courier Document',
+			'int_express_post' => 'Int. Express Post',
+			'int_pack_track' => 'Int. Pack & Track',
+			'int_registered' => 'Int. Registered',
+		);
+		
+		$options = array();
+		$options[] = array('value' => '', 'label' => 'Please Select Services');
+		foreach($services as $k=>$service) {
+			$service_value = Mage::getStoreConfig('carriers/linksynceparcel/'. $k .'_chargecode');
+			if(!empty($service_value)) {
+				$options[] = array('value' => $service_value, 'label' => $service);
+			}
+		}
+		return $options;
+	}
+	
+	public function updateServiceData($service_type)
+	{
+		$resource = Mage::getSingleton('core/resource');
+	    $writeConnection = $resource->getConnection('core_write');
+	    $table = $resource->getTableName('linksync_linksynceparcel_nonlinksync');
+		
+		$service_value = Mage::getStoreConfig('carriers/linksynceparcel/'. $service_type .'_chargecode');
+		
+		$query = "UPDATE {$table} SET charge_code='". $service_value ."' WHERE service_type='{$service_type}'";
+		$writeConnection->query($query);
+	}
+	
 	public function getChargeCodeOptions($none=false)
 	{
 		$chargeCodes = $this->getChargeCodes();
@@ -4809,9 +4914,9 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 					$article = array();
 					$article['description'] = $articleTemp[0];
 					$article['weight'] = $articleTemp[1];
-					$article['height'] = $articleTemp[2];
-					$article['length'] = $articleTemp[3];
-					$article['width'] = $articleTemp[4];
+					$article['height'] = trim($articleTemp[2]);
+					$article['width'] = trim($articleTemp[3]);
+					$article['length'] = trim($articleTemp[4]);
 				}
 			
 				$actualWeight = $article['weight'];
@@ -4851,9 +4956,9 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 			$article = array();
 			$article['description'] = $articleTemp[0];
 			$article['weight'] = $articleTemp[1];
-			$article['height'] = $articleTemp[2];
-			$article['length'] = $articleTemp[3];
-			$article['width'] = $articleTemp[4];
+			$article['height'] = trim($articleTemp[2]);
+			$article['width'] = trim($articleTemp[3]);
+			$article['length'] = trim($articleTemp[4]);
 			
 			$actualWeight = $article['weight'];
 			$articleDescription = $article['description'];
@@ -4953,9 +5058,9 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 				$article = array();
 				$article['description'] = $articleTemp[0];
 				$article['weight'] = $articleTemp[1];
-				$article['height'] = $articleTemp[2];
-				$article['length'] = $articleTemp[3];
-				$article['width'] = $articleTemp[4];
+				$article['height'] = trim($articleTemp[2]);
+				$article['width'] = trim($articleTemp[3]);
+				$article['length'] = trim($articleTemp[4]);
 			}
 		
 			$actualWeight = $article['weight'];
@@ -6162,7 +6267,7 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 		if($chargeCodeData['serviceType'] == 'international' && $country == 'AU') {
 			$errors[] = 'International chargecode could not be use for domestic country. Please check and try again.';
 		}
-
+		
 		if($chargeCodeData['serviceType'] != 'international' && $country != 'AU') {
 			$errors[] = 'Domestic chargecode could not be use for international. Please check and try again.';
 		}
@@ -6178,6 +6283,9 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 			}
 			if(empty($country_origin))
 				$errors[] = '<strong>Country of Origin</strong> is a required field.';
+
+			if((isset($data['has_commercial_value']) && $data['has_commercial_value'] == 1) && empty($data['hs_tariff']))
+				$errors[] = '<strong>HS Tarrif Number</strong> is a required field.';
 			
 			if(!empty($data['hs_tariff']))
 				if(is_numeric($data['hs_tariff'])) {
@@ -6888,6 +6996,24 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 		}
 		return true;
 	}
+
+	public function isupgraded_nonlinksync()
+	{
+		$resource = Mage::getSingleton('core/resource');
+	    $readConnection = $resource->getConnection('core_read');
+	    $table = $resource->getTableName('linksync_linksynceparcel_nonlinksync');
+
+		$query = "SELECT * FROM {$table} LIMIT 1";
+		$results = $readConnection->fetchAll($query);
+		if(!empty($results)) {
+			$c = $results[0];
+			if(array_key_exists('service_type',$c)) {
+				return true;
+			}
+			return false;
+		}
+		return true;
+	}
 	
 	public function checkCountryRegion($countrycode)
 	{
@@ -6901,5 +7027,82 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 			return true;
 		}
 		return false;
+	}
+	
+	public function roundoff_number($value, $precision)
+	{
+		$pow = pow ( 10, $precision ); 
+		return ( ceil ( $pow * $value ) + ceil ( $pow * $value - ceil ( $pow * $value ) ) ) / $pow;
+	}
+
+	public function calculateWeightDefault($weight)
+	{
+		if($weight==floatval(0.00))
+		{
+			return 0.01;
+		}
+
+		return $weight;
+	}
+
+	public function getCombination($chargecode)
+	{
+		$chargeCodes = $this->getChargeCodes();
+		$cc = $chargeCodes[$chargecode];
+		if($cc['serviceCode'] != 0 && $cc['prodCode'] != 0) {
+			$sc_pc = $cc['serviceCode'] .'_'. $cc['prodCode'];
+			return $this->combinationData($sc_pc);
+		}
+		return false;
+	}
+
+	public function combinationData($sc_pc) 
+	{
+		$combinations = array(
+			'2_93' => array(
+				'delivery_signature_allowed' => 1,
+				'partial_delivery_allowed' => 0
+			),
+			'2_96' => array(
+				'delivery_signature_allowed' => 1,
+				'partial_delivery_allowed' => 0
+			),
+			'9_91' => array(
+				'delivery_signature_allowed' => 0,
+				'partial_delivery_allowed' => 1
+			),
+			'9_87' => array(
+				'delivery_signature_allowed' => 0,
+				'partial_delivery_allowed' => 1
+			)
+		);
+		if(isset($combinations[$sc_pc])) {	
+			return $combinations[$sc_pc];
+		}
+		return false;
+	}
+
+	public function validateCombination($data, $combinations, $chargecode)
+	{
+		$delivery_signature = $data['delivery_signature_allowed'];
+		$partial_delivery = $data['partial_delivery_allowed'];
+		if($combinations) {
+			if($combinations['delivery_signature_allowed'] != $delivery_signature || $combinations['partial_delivery_allowed'] != $partial_delivery) {
+				$pda = ($combinations['partial_delivery_allowed']==1)?'Yes':'No';
+				$dsa = ($combinations['delivery_signature_allowed']==1)?'Yes':'No';
+				return array('error_msg' => 'You current chargecode <strong>'. $chargecode .'</strong> has invalid combination of data. Please make the <strong>Partial Delivery allowed?</strong> to <strong>'. $pda .'</strong> value and <strong>Delivery signature required?</strong> to <strong>'. $dsa .'</strong> value' );
+			}
+		}
+		return true;
+	}
+
+	public function zeroIfEmpty($value)
+	{
+		if(empty($value))
+		{
+			return 0;
+		}
+
+		return $value;
 	}
 }

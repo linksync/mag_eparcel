@@ -311,6 +311,7 @@ class Linksync_Linksynceparcel_ConsignmentController extends Mage_Adminhtml_Cont
 			$errors = implode('<br>', $validate);
 			$this->_getSession()->addError($errors);
 		} else {
+
 			if( $remainArticles > 0)
 			{
 				$canConsignments++;
@@ -511,7 +512,7 @@ class Linksync_Linksynceparcel_ConsignmentController extends Mage_Adminhtml_Cont
 		}
 		$this->_redirect("adminhtml/sales_order/view", array('order_id' => $order_id,'active_tab' => 'linksync_eparcel'));
     }
-	
+
 	public function updateConsignmentAction()
     {
 		$order_id = $this->getOrder()->getId();
