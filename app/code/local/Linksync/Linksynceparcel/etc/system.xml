@@ -4,7 +4,7 @@
         <carriers>
             <groups>
                 <linksynceparcel translate="label">
-                    <label>linksync eParcel 1.1.4</label>
+                    <label>linksync eParcel 1.1.5</label>
                     <frontend_type>text</frontend_type>
                     <sort_order>600</sort_order>
                     <show_in_default>1</show_in_default>

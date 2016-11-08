@@ -15,19 +15,17 @@ class Linksync_Linksynceparcel_Block_Adminhtml_Renderer_Consignment_Labelprinted
 			if($valid)
 			{
 				$imgLink = $this->getSkinUrl("linksynceparcel/images/icon-enabled.png");
-				$label =  $row->getData('label');
-				$labelLink = Mage::helper('linksynceparcel')->getConsignmentLabelUrl();
+				$labelLink = $this->getUrl('linksynceparcel/index/processDownloadPdf/') . '?f_type=consignment&f_key='. $row->getData('consignment_number');
 				$image = '<img src="'.$imgLink.'" />';
-				$html = '<a class="print_label" href="'.$labelLink.$label.'?'.time().'" target="_blank" border="0">'.$image.'</a>';
+				$html = '<a class="print_label" href="'.$labelLink.'" target="_blank" border="0">'.$image.'</a>';
 				
 			}
 			else if($row->getData('is_label_created'))
 			{
 				$imgLink = $this->getSkinUrl("linksynceparcel/images/cancel_icon.gif");
-				$label =  $row->getData('label');
-				$labelLink = Mage::helper('linksynceparcel')->getConsignmentLabelUrl();
+				$labelLink = $this->getUrl('linksynceparcel/index/processDownloadPdf/') . '?f_type=consignment&f_key='. $row->getData('consignment_number');
 				$image = '<img src="'.$imgLink.'" />';
-				$html = '<a class="print_label" lang="'.$row->getData('consignment_number').'" href="'.$labelLink.$label.'?'.time().'" target="_blank" border="0">'.$image.'</a>';
+				$html = '<a class="print_label" lang="'.$row->getData('consignment_number').'" href="'.$labelLink.'" target="_blank" border="0">'.$image.'</a>';
 			}
 			else
 			{

@@ -7,8 +7,9 @@ class Linksync_Linksynceparcel_Block_Adminhtml_Renderer_Manifest_Labelprint exte
 		$label =  $row->getData($this->getColumn()->getIndex());
 		if($label)
 		{
-			$labelLink = Mage::helper('linksynceparcel')->getManifestLabelUrl();
-			$html = '<a href="'.$labelLink.$label.'" target="_blank" >View</a>';
+			$manifest =  $row->getData('manifest_number');
+			$labelLink = $this->getUrl('linksynceparcel/index/processDownloadPdf/') . '?f_type=manifest&f_key='. $manifest;
+			$html = '<a href="'.$labelLink.'" target="_blank" >View</a>';
 		}
 		else
 		{

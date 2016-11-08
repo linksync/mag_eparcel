@@ -152,7 +152,12 @@ $presets = Mage::getModel('linksynceparcel/preset')
 							);
 							
 							$label = $chargeCodeData['labelType'];
-							$intweight = $intArticle[$label]['weight'];
+							$maxLimitWeight = $intArticle[$label]['weight'];
+
+                                                                                            if($intweight > $maxLimitWeight)
+                                                                                            {
+                                                                                                $intweight = $maxLimitWeight;
+                                                                                            }
 						}
 						?>
                         <input size="10" style="text-align:center" id="article_weight" name="article[weight]" class="required-entry positive-number maximum-value" label="Weight" value="<?php echo ($weight > $weightPerArticle) ? $weightPerArticle : $intweight; ?>"/>
@@ -491,7 +496,7 @@ $presets = Mage::getModel('linksynceparcel/preset')
             padding: 3px 7px 3px;
             text-align: center !important;
             white-space: nowrap;
-            text-decoration:none;' class="button print_label" lang="<?php echo $consignment['consignment_number']?>" target="_blank" href="<?php echo $this->getConsignmentLabelUrl().$consignment['label'].'?'.time()?>" type="button" title="Print Label">
+            text-decoration:none;' class="button print_label" lang="<?php echo $consignment['consignment_number']?>" target="_blank" href="<?php echo $this->getUrl('linksynceparcel/index/processDownloadPdf/') . '?f_type=consignment&f_key='. $consignment['consignment_number']; ?>" type="button" title="Print Label">
                         <span><span><span>
                         <?php echo ($consignment['is_label_printed'] ? 'Reprint' : 'Print');?> Label
                         </span></span></span>

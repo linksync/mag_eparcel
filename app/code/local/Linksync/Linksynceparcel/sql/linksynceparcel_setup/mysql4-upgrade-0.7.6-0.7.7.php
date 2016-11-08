@@ -28,6 +28,8 @@ $installer->run("
 		ADD `is_customdocs_printed` tinyint(1) NOT NULL DEFAULT '0' AFTER `is_label_printed`,
 		ADD `delivery_instruction` varchar(300),
 		ADD `safe_drop` tinyint(1);
+	ALTER TABLE {$this->getTable('linksync_linksynceparcel_nonlinksync')} 
+		ADD `service_type` varchar(100);
 ");
 
 $installer->endSetup(); 

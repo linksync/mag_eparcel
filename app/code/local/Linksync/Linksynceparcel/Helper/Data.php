@@ -314,6 +314,11 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 				return $validateCombination;
 			}
 		}
+		
+		$limitValidation = $this->getOrderProdItems($data, $order->getId(), false, false, true);
+		if($limitValidation > 19) {
+			return array('Parcel single order content items must not exceed 20 limit.');
+		}
 
 		if($country != 'AU') {
 			$returnInternationalAddress = $this->prepareInternationalReturnAddress($storeId);
@@ -403,6 +408,11 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 				return $validateCombination;
 			}
 		}
+				
+		$limitValidation = $this->getOrderProdItems($data, $order->getId(), false, false, true);
+		if($limitValidation > 19) {
+			return array('Parcel single order content items must not exceed 20 limit.');
+		}
 
 		if($country != 'AU') {
 			$returnInternationalAddress = $this->prepareInternationalReturnAddress($storeId);
@@ -487,6 +497,11 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 			if(is_array($validateCombination)) {
 				return $validateCombination;
 			}
+		}
+				
+		$limitValidation = $this->getOrderProdItems($data, $order->getId(), false, false, true);
+		if($limitValidation > 19) {
+			return array('Parcel single order content items must not exceed 20 limit.');
 		}
 
 		if($country != 'AU') {
@@ -4718,12 +4733,17 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 	{
 		$resource = Mage::getSingleton('core/resource');
 	    $writeConnection = $resource->getConnection('core_write');
+		$readConnection = $resource->getConnection('core_read');
 	    $table = $resource->getTableName('linksync_linksynceparcel_nonlinksync');
 		
 		$service_value = Mage::getStoreConfig('carriers/linksynceparcel/'. $service_type .'_chargecode');
 		
-		$query = "UPDATE {$table} SET charge_code='". $service_value ."' WHERE service_type='{$service_type}'";
-		$writeConnection->query($query);
+		$query_select = "SELECT * FROM {$table} WHERE service_type = '{$service_type}'";
+		$records = $readConnection->fetchAll($query_select);
+		if($records) {	
+			$query = "UPDATE {$table} SET charge_code='". $service_value ."' WHERE service_type='{$service_type}'";
+			$writeConnection->query($query);
+		}
 	}
 	
 	public function getChargeCodeOptions($none=false)
@@ -5498,6 +5518,13 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 		return $storeUrl;
 	}
 	
+	public function getConsignmentLabelDir()
+	{
+		$storeUrl = Mage::getBaseDir('media');
+		$storeUrl .= '/linksync/label/consignment/';
+		return $storeUrl;
+	}
+	
 	public function getConsignmentReturnLabelUrl()
 	{
 		$storeUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB);
@@ -5516,6 +5543,13 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 	{
 		$storeUrl = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB);
 		$storeUrl .= 'media/linksync/label/manifest/';
+		return $storeUrl;
+	}
+	
+	public function getManifestLabelDir()
+	{
+		$storeUrl = Mage::getBaseDir('media');
+		$storeUrl .= '/linksync/label/manifest/';
 		return $storeUrl;
 	}
 	
@@ -6641,7 +6675,7 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 		return $deliveryFailureDetails;
 	}
 	
-	public function getOrderProdItems($data, $orderid, $totalonly=false, $totalweight=false) 
+	public function getOrderProdItems($data, $orderid, $totalonly=false, $totalweight=false, $numberofitems = false) 
 	{
 		$order = Mage::getModel('sales/order')->load($orderid);
 		$ordered_items = $order->getAllItems();
@@ -6690,6 +6724,7 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 			
 			$alter = false;
 			$cnt = 0;
+			$number_items = 0;
 			$contents = '';
 			$countryOrigin = !empty($data['country_origin'])?$data['country_origin']:trim(Mage::getStoreConfig('carriers/linksynceparcel/default_country_origin'));
 			$hsTariff = !empty($data['hs_tariff'])?$data['hs_tariff']:trim(Mage::getStoreConfig('carriers/linksynceparcel/default_has_tariff'));
@@ -6747,10 +6782,15 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 					$contents .= '</content>';
 					
 					$cnt++;
+					$number_items++;
 				}
 			}
 			
-			return ($totalonly)?$totalCost:array('totalcost' => $totalCost, 'contents' => $contents);
+			if($numberofitems) {
+				return $number_items;
+			} else {				
+				return ($totalonly)?$totalCost:array('totalcost' => $totalCost, 'contents' => $contents);
+			}
 		} else {
 			return false;
 		}

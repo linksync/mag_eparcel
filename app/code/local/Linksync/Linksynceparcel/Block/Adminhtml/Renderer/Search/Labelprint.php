@@ -7,8 +7,8 @@ class Linksync_Linksynceparcel_Block_Adminhtml_Renderer_Search_Labelprint extend
 		$value =  $row->getData($this->getColumn()->getIndex());
 		if($value)
 		{
-			$labelLink = Mage::helper('linksynceparcel')->getConsignmentLabelUrl();
-			$html = '<a class="print_label" lang="'.$row->getData('consignment_number').'" href="'.$labelLink.$value.'?'.time().'" target="_blank" >View</a>';
+			$labelLink = $this->getUrl('linksynceparcel/index/processDownloadPdf/') . '?f_type=consignment&f_key='. $row->getData('consignment_number');
+			$html = '<a class="print_label" lang="'.$row->getData('consignment_number').'" href="'.$labelLink.'" target="_blank" >View</a>';
 		}
 		else
 		{

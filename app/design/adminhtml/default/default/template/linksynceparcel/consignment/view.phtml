@@ -387,7 +387,7 @@
             padding: 3px 7px 3px;
             text-align: center !important;
             white-space: nowrap;
-            text-decoration:none;' class="button print_label" lang="<?php echo $consignment['consignment_number']?>" target="_blank" href="<?php echo $this->getConsignmentLabelUrl().$consignment['label'].'?'.time()?>" type="button" title="Print Label">
+            text-decoration:none;' class="button print_label" lang="<?php echo $consignment['consignment_number']?>" target="_blank" href="<?php echo $this->getUrl('linksynceparcel/index/processDownloadPdf/') . '?f_type=consignment&f_key='. $consignment['consignment_number']; ?>" type="button" title="Print Label">
                         <span><span><span>
                         <?php echo ($consignment['is_label_printed'] ? 'Reprint' : 'Print');?> Label
                         </span></span></span>

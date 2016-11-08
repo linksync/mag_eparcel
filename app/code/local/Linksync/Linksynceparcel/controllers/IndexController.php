@@ -44,6 +44,7 @@ class Linksync_Linksynceparcel_IndexController extends Mage_Core_Controller_Fron
 		$isupgraded_114 = Mage::helper('linksynceparcel')->isupgraded_nonlinksync();
 
 		if (!$isupgraded_114) {
+			echo "Hello";
 			$table = $resource->getTableName('linksync_linksynceparcel_nonlinksync');
 			$query = "ALTER TABLE `". $table ."` 
 					ADD `service_type` varchar(100);";
@@ -235,8 +236,8 @@ class Linksync_Linksynceparcel_IndexController extends Mage_Core_Controller_Fron
 					
 									Mage::helper('linksynceparcel')->updateManifestTable($currentManifest,'label',$filename);
 									
-									$labelLink = Mage::helper('linksynceparcel')->getManifestLabelUrl();
-									$success = Mage::helper('linksynceparcel')->__('Your Manifest Summary has been generated. <a href="%s" target="_blank" style="color:blue; font-weight:bold; font-size:14px; text-decoration:underline">Please click here to view it.</a>', $labelLink.$filename.'?'.time());
+									$labelLink = $this->getUrl('linksynceparcel/index/processDownloadPdf/') . '?f_type=manifest&f_key='. $currentManifest;
+									$success = Mage::helper('linksynceparcel')->__('Your Manifest Summary has been generated. <a href="%s" target="_blank" style="color:blue; font-weight:bold; font-size:14px; text-decoration:underline">Please click here to view it.</a>', $labelLink);
 									$final_msgs .= '<li class="success-msg"><ul><li><span>'. $success .'</span></li></ul></li>';
 								}
 								else
@@ -420,6 +421,85 @@ class Linksync_Linksynceparcel_IndexController extends Mage_Core_Controller_Fron
 		{
 			Mage::log('Order Id:'.$order->getId().', Add Ship Info Failed on Despatch: '.$e->getMessage(), null, 'linksync_eparcel.log', true);
 		}
+	}
+	
+	public function processDownloadPdfAction()
+	{
+		if( isset($_GET['f_key']) && !empty($_GET['f_key']) ) {
+			$filename = false;
+			switch($_GET['f_type']) {
+				case 'consignment':
+					$filename = Mage::helper('linksynceparcel')->getConsignmentLabelDir() . $_GET['f_key'] .'.pdf';
+					break;
+					
+				case 'manifest':
+					$filename = Mage::helper('linksynceparcel')->getManifestLabelDir() . $_GET['f_key'] .'.pdf';
+					break;
+
+				default:
+					$filename = Mage::helper('linksynceparcel')->getConsignmentLabelDir() . $_GET['f_key'] .'.pdf';
+					break;
+			}
+			
+			if ( is_file($filename) ) {
+				// required for IE & Safari
+				if(ini_get('zlib.output_compression')) { ini_set('zlib.output_compression', 'Off');	}
+				
+				header('Pragma: public'); 	// required
+				header('Expires: 0');		// no cache
+				header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+				header('Last-Modified: '.gmdate ('D, d M Y H:i:s', @filemtime ($filename)).' GMT');
+				header('Cache-Control: private',false);
+				header('Content-Type: application/pdf');
+				header('Content-Disposition: attachment; filename="'.basename($filename).'"');
+				header('Content-Transfer-Encoding: binary');
+				header('Content-Length: '. @filesize($filename) );	// provide file size
+				header('Connection: close');
+				$this->readfileChunked( $filename );		// push it out
+				die();
+			}
+		}
+	}
+	
+	public function readfileChunked($filename, $retbytes=true){
+		$chunksize = 1*(1024*1024);
+		$buffer = '';
+		$cnt = 0;
+		$handle = fopen($filename, 'rb');
+		if ($handle === false) {
+			return false;
+		}
+		while (!feof($handle)) {
+			$buffer = fread($handle, $chunksize);
+			echo $buffer;
+			ob_flush();
+			flush();
+			if ($retbytes) {
+				$cnt += strlen($buffer);
+			}
+		}
+		$status = fclose($handle);
+		if ($retbytes && $status) {
+			return $cnt;
+		}
+		return $status;
+	}
+	
+	public function formatSizeUnits($bytes){
+		if ($bytes >= 1073741824){
+			 $bytes = number_format($bytes / 1073741824, 2) . ' GB';
+		} elseif ($bytes >= 1048576) {
+			 $bytes = number_format($bytes / 1048576, 2) . ' MB';
+		} elseif ($bytes >= 1024) {
+			$bytes = number_format($bytes / 1024, 2) . ' KB';
+		} elseif ($bytes > 1) {
+			$bytes = $bytes . ' bytes';
+		} elseif ($bytes == 1) {
+			$bytes = $bytes . ' byte';
+		} else {
+			$bytes = '0 bytes';
+		}
+		return $bytes;
 	}
 	
 	public function sendlogAction()
