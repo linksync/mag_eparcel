@@ -253,8 +253,10 @@ class Linksync_Linksynceparcel_Adminhtml_ConsignmentController extends Mage_Admi
 							$handle = fopen($filepath,'wb');
 							fwrite($handle, $labelContent);
 							fclose($handle);
-							$labelLink = Mage::helper('linksynceparcel')->getConsignmentLabelUrl();
-							$success = Mage::helper('linksynceparcel')->__('Label is generated. <a href="%s" target="_blank" style="color:blue; font-weight:bold; font-size:14px; text-decoration:underline">Please click here to view it.</a>',$labelLink.$filename.'?'.time());
+							
+							$labelLink = $this->getUrl('linksynceparcel/index/processDownloadPdf/') . '?f_type=consignment&f_key=bulk-consignments-label';
+							
+							$success = Mage::helper('linksynceparcel')->__('Label is generated. <a href="%s" target="_blank" style="color:blue; font-weight:bold; font-size:14px; text-decoration:underline">Please click here to view it.</a>',$labelLink);
 							Mage::getSingleton('adminhtml/session')->addSuccess($success);
 							/*Mage::app()->getFrontController()->getResponse()->setRedirect($labelLink.$filename)->sendResponse();
 							$this->_redirectUrl($labelLink.$filename);

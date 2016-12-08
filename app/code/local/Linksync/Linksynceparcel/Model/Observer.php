@@ -189,6 +189,9 @@ class Linksync_Linksynceparcel_Model_Observer
 				Mage::getModel('core/config')->saveConfig('carriers/linksynceparcel/check_merchant_location_id', trim($merchant_location_id));
 			}
 		}
+		
+		// Change directory permission
+		chmod(Mage::getBaseDir().DS.'media'.DS.'linksync'.DS.'label', 0740);
 	}
 	
 	public function orderCancelled(Varien_Event_Observer $observer)
