@@ -847,7 +847,7 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 		{
 			if($data['articles_type'] == 'Custom')
 			{
-        				$article = $data['article'.$i];
+        		$article = $data['article'.$i];
 			}
 			else
 			{
@@ -857,9 +857,9 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 				$article = array();
 				$article['description'] = trim($articles[0]);
 				$article['weight'] = $articles[1];
-				$article['height'] = trim($articles[2]);
-				$article['width'] = trim($articles[3]);
-				$article['length'] = trim($articles[4]);
+				$article['height'] = $articles[2];
+				$article['width'] = $articles[3];
+				$article['length'] = $articles[4];
 				
 				$use_order_total_weight = (int)Mage::getStoreConfig('carriers/linksynceparcel/use_order_total_weight');
 				if($use_order_total_weight == 1)
@@ -918,10 +918,10 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 
 				$replace = array(
 					$this->xmlData($article['description']),
-					trim($article['weight']),
-					trim($article['width']),
-					trim($article['height']),
-					trim($article['length'])
+					$this->zeroIfEmpty($article['weight']),
+					$this->zeroIfEmpty($article['width']),
+					$this->zeroIfEmpty($article['height']),
+					$this->zeroIfEmpty($article['length'])
 				);
 				
 				$template = file_get_contents($this->getTemplatePath().DS.'international-article-template.xml');
@@ -940,11 +940,11 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 			
 			
 				$replace = array(
-					trim($article['weight']),
+					$this->zeroIfEmpty($article['weight']),
 					$this->xmlData($article['description']),
-					0,
-					0,
-					'<width>'. 0 .'</width>',
+					$this->zeroIfEmpty($article['height']),
+					$this->zeroIfEmpty($article['length']),
+					'<width>'. $this->zeroIfEmpty($article['width']) .'</width>',
 					($data['transit_cover_required'] ? 'Y' : 'N'),
 					($data['transit_cover_required'] ? $data['transit_cover_amount'] : 0),
 					(isset($article['article_number']) ? '<articleNumber>'.$article['article_number'].'</articleNumber>' : '')
@@ -982,9 +982,9 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 				$article = array();
 				$article['description'] = $articles[0];
 				$article['weight'] = $articles[1];
-				$article['height'] = trim($articles[2]);
-				$article['width'] = trim($articles[3]);
-				$article['length'] = trim($articles[4]);
+				$article['height'] = $articles[2];
+				$article['width'] = $articles[3];
+				$article['length'] = $articles[4];
 			}
 			
 			if($data['edit_order_weight'] == 1) {
@@ -1008,9 +1008,9 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 				$replace = array(
 					$this->xmlData(trim($article['description'])),
 					trim($article['weight']),
-					0,
-					0,
-					0
+					$this->zeroIfEmpty($article['width']),
+					$this->zeroIfEmpty($article['height']),
+					$this->zeroIfEmpty($article['length'])
 				);
 				
 				$template = file_get_contents($this->getTemplatePath().DS.'international-article-template.xml');
@@ -1026,11 +1026,11 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 					'[[articleNumber]]'
 				);
 				$replace = array(
-					$article['weight'],
+					$this->zeroIfEmpty($article['weight']),
 					$this->xmlData($article['description']),
-					0,
-					0,
-					'<width>0</width>',
+					$this->zeroIfEmpty($article['height']),
+					$this->zeroIfEmpty($article['length']),
+					'<width>'. $this->zeroIfEmpty($article['width']) .'</width>',
 					($data['transit_cover_required'] ? 'Y' : 'N'),
 					($data['transit_cover_required'] ? $data['transit_cover_amount'] : 0),
 					(isset($article['article_number']) ? '<articleNumber>'.$article['article_number'].'</articleNumber>' : '')
@@ -6233,7 +6233,16 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 	
 	public function getSiteUrl($api=false)
 	{
-		$url = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB);
+		if(isset($_SERVER['HTTPS'])){
+			$protocol = ($_SERVER['HTTPS'] && $_SERVER['HTTPS'] != "off") ? "https" : "http";
+		}
+		else{
+			$protocol = 'http';
+		}
+		$url = $protocol . "://" . $_SERVER['HTTP_HOST'];
+		if(empty($url)) {
+			$url = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB);
+		}
 		if($api) {
 			$parseurl = parse_url($url);
 			$url = str_replace('www.', '', str_replace($parseurl['scheme'].'://', '', $url));
@@ -7143,6 +7152,6 @@ class Linksync_Linksynceparcel_Helper_Data extends Mage_Core_Helper_Abstract
 			return 0;
 		}
 
-		return $value;
+		return trim($value);
 	}
 }

@@ -2,7 +2,7 @@
 <config>
 	<modules>
 		<Linksync_Linksynceparcel>
-			<version>1.1.6</version>
+			<version>1.1.7</version>
 		</Linksync_Linksynceparcel>
 	</modules>
 	<frontend>

@@ -236,7 +236,8 @@ class Linksync_Linksynceparcel_IndexController extends Mage_Core_Controller_Fron
 					
 									Mage::helper('linksynceparcel')->updateManifestTable($currentManifest,'label',$filename);
 									
-									$labelLink = $this->getUrl('linksynceparcel/index/processDownloadPdf/') . '?f_type=manifest&f_key='. $currentManifest;
+									$site_url = Mage::helper('linksynceparcel')->getSiteUrl();
+									$labelLink = $site_url .'/linksynceparcel/index/processDownloadPdf/?f_type=manifest&f_key='. $currentManifest;
 									$success = Mage::helper('linksynceparcel')->__('Your Manifest Summary has been generated. <a href="%s" target="_blank" style="color:blue; font-weight:bold; font-size:14px; text-decoration:underline">Please click here to view it.</a>', $labelLink);
 									$final_msgs .= '<li class="success-msg"><ul><li><span>'. $success .'</span></li></ul></li>';
 								}

@@ -17,7 +17,7 @@ class Linksync_Linksynceparcel_Block_Adminhtml_Renderer_Consignment_Addressvalid
 			{
 				$imgLink = $this->getSkinUrl("linksynceparcel/images/icon-enabled.png");
 			}
-			elseif($isValid) 
+			elseif($isValid == 1) 
 			{
 				$imgLink = $this->getSkinUrl("linksynceparcel/images/icon-enabled.png");
 			}
